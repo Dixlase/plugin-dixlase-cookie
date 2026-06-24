@@ -34,67 +34,143 @@ namespace Plugins\DixlaseCookie\App\Services;
 
 use App\Contracts\Cookie\ConsentStateProviderInterface;
 use App\Enums\ConsentCategory;
+use Illuminate\Http\Request;
+use Plugins\DixlaseCookie\App\Models\DixlaseCookieConsent;
+use Plugins\DixlaseCookie\App\Models\DixlaseCookieSetting;
 
 /**
  * Default implementation of {@see ConsentStateProviderInterface}.
  *
- * This is the B-1 stub: it returns the GDPR-correct conservative
- * defaults until the cookie reader (B-3) and the version setting
- * reader (B-2) are wired up. The defaults are:
+ * Reads the current visitor's consent from the persistent cookie
+ * issued at accept time (B-3b). On each request the visitor carries a
+ * {@see self::COOKIE_NAME} cookie holding the UUID that groups their
+ * append-only consent rows; this class resolves the most recent row
+ * for that UUID and derives the live category snapshot from it.
  *
- * - `has('necessary')` returns true — the site cannot function
- *   without strictly-necessary cookies, so they are implicitly
- *   granted.
- * - Every other category returns false — without an explicit
- *   accept action from the visitor, no consent has been given.
- * - `snapshot()` returns an empty array — no decision recorded yet.
- * - `version()` returns 1 — no policy bump yet.
+ * Staleness: a stored decision is only honoured while its
+ * `policy_version` still matches the operator-controlled
+ * {@see self::VERSION_SETTING_KEY} setting. After an operator bumps
+ * the version (privacy-policy revision), every older row is treated as
+ * "no decision yet" so the banner re-appears and non-necessary
+ * categories fall back to denied — without us touching client storage.
  *
- * Consumers (DixlaseSEO's GA tag in particular) that probe this
- * provider via `app()->bound(...)` therefore see "consent system
- * present, analytics not yet accepted" and correctly defer their
- * tracking emission. The stub satisfies the contract end-to-end so
- * a follow-up PR can validate the soft-dependency wiring before the
- * real cookie reader replaces this class.
+ * Conservative fallbacks (no cookie, no matching row, stale version,
+ * or unreadable settings) collapse to the GDPR-correct default: only
+ * `necessary` is granted, everything else denied, snapshot empty.
+ * Consumers (DixlaseSEO's GA tag in particular) probing via
+ * `app()->bound(...)` therefore see "consent system present, analytics
+ * not yet accepted" and correctly defer their tracking emission.
  */
 final class CookieConsentStateProvider implements ConsentStateProviderInterface
 {
     /**
+     * Persistent per-visitor cookie holding the consent UUID. The
+     * value matches the `consent_id` column on
+     * {@see DixlaseCookieConsent}; B-3b issues it at accept time.
+     */
+    public const COOKIE_NAME = 'dixlase_cookie_consent_id';
+
+    /** Setting key holding the operator-controlled consent version. */
+    public const VERSION_SETTING_KEY = 'cookie_consent_version';
+
+    /** Default consent version when the setting is unset (no bump yet). */
+    public const DEFAULT_VERSION = 1;
+
+    /**
      * {@inheritDoc}
      *
-     * Returns true only for the implicit `necessary` category; all
-     * other categories require an explicit accept that this stub has
-     * no way to read yet. B-3 will replace this body with a lookup
-     * against the persistent consent cookie issued at accept time.
+     * `necessary` is implicitly granted whenever the consent system is
+     * present (the site cannot function without it), so it short-circuits
+     * to true without a lookup. Every other category is true only when
+     * the visitor's current (non-stale) recorded decision granted it.
      */
     public function has(string $category): bool
     {
-        return $category === ConsentCategory::Necessary->value;
+        if ($category === ConsentCategory::Necessary->value) {
+            return true;
+        }
+
+        return ($this->snapshot()[$category] ?? false) === true;
     }
 
     /**
      * {@inheritDoc}
      *
-     * Empty until B-3 wires in the cookie reader. Returning an empty
-     * array (rather than seeding `['necessary' => true]`) matches the
-     * interface contract that absent categories mean "the visitor
-     * has not been asked about this yet" — including `necessary`,
-     * which is implicit but unrecorded.
+     * Resolves the visitor's most recent consent row from the cookie
+     * UUID and returns its category map (normalised to booleans, with
+     * `necessary` forced present and true). Returns an empty array when
+     * there is no cookie, no matching row, or the stored decision
+     * predates the current policy version — i.e. "not asked yet".
      */
     public function snapshot(): array
     {
-        return [];
+        $consentId = $this->currentConsentId();
+        if ($consentId === null) {
+            return [];
+        }
+
+        $record = DixlaseCookieConsent::query()
+            ->forConsentId($consentId)
+            ->latestFirst()
+            ->first();
+
+        if ($record === null) {
+            return [];
+        }
+
+        // A decision agreed to under an older policy is no longer valid
+        // consent — treat it as "not asked" so the banner re-appears.
+        if ((int) $record->policy_version !== $this->version()) {
+            return [];
+        }
+
+        $categories = $record->categories;
+        if (! is_array($categories)) {
+            return [];
+        }
+
+        $snapshot = [];
+        foreach ($categories as $key => $value) {
+            $snapshot[$key] = (bool) $value;
+        }
+
+        // The contract requires `necessary` to be present and true in
+        // any non-empty snapshot, regardless of what was persisted.
+        $snapshot[ConsentCategory::Necessary->value] = true;
+
+        return $snapshot;
     }
 
     /**
      * {@inheritDoc}
      *
-     * Returns the default version 1. B-2 will replace this body with
-     * a lookup against the cookie_consent_version setting so the
-     * operator-controlled bump action invalidates client cookies.
+     * Reads the {@see self::VERSION_SETTING_KEY} setting, falling back
+     * to {@see self::DEFAULT_VERSION} when missing or non-numeric. The
+     * value is clamped to >= 1 per the contract.
      */
     public function version(): int
     {
-        return 1;
+        $raw = DixlaseCookieSetting::getValue(self::VERSION_SETTING_KEY);
+        if ($raw === null || $raw === '' || ! is_numeric($raw)) {
+            return self::DEFAULT_VERSION;
+        }
+
+        return max(1, (int) $raw);
+    }
+
+    /**
+     * Resolve the consent UUID from the current request's cookie, or
+     * null when there is no active request or no usable cookie value.
+     */
+    private function currentConsentId(): ?string
+    {
+        $request = request();
+        if (! $request instanceof Request) {
+            return null;
+        }
+
+        $value = $request->cookie(self::COOKIE_NAME);
+
+        return is_string($value) && $value !== '' ? $value : null;
     }
 }

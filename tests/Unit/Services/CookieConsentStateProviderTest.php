@@ -34,28 +34,75 @@ namespace Plugins\DixlaseCookie\Tests\Unit\Services;
 
 use App\Contracts\Cookie\ConsentStateProviderInterface;
 use App\Enums\ConsentCategory;
-use PHPUnit\Framework\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
+use Plugins\DixlaseCookie\App\Models\DixlaseCookieConsent;
+use Plugins\DixlaseCookie\App\Models\DixlaseCookieSetting;
 use Plugins\DixlaseCookie\App\Services\CookieConsentStateProvider;
+use Tests\TestCase;
 
 /**
- * Behaviour tests for the B-1 stub provider.
+ * Behaviour tests for the B-3a persistent-cookie reader.
  *
- * The values these tests pin down are the GDPR-correct conservative
- * defaults — anything that depends on a visitor's actual recorded
- * decision is "no decision yet" (false / empty / 1). When B-2 and
- * B-3 replace the body of {@see CookieConsentStateProvider} with the
- * real cookie reader, these expectations change: at that point
- * `has('analytics')` etc. will depend on the persisted cookie value,
- * and these tests will need replacing rather than amending.
+ * Unlike the B-1 stub these tests exercise the real lookup path:
+ * a consent UUID carried in the {@see CookieConsentStateProvider::COOKIE_NAME}
+ * cookie resolves to the visitor's most recent append-only consent row,
+ * which drives `has()` / `snapshot()`. The conservative fallbacks (no
+ * cookie, no row, stale policy version) all collapse to "necessary only".
  */
 class CookieConsentStateProviderTest extends TestCase
 {
+    use RefreshDatabase;
+
     private CookieConsentStateProvider $provider;
 
     protected function setUp(): void
     {
         parent::setUp();
+
+        Artisan::call('migrate', [
+            '--path' => 'plugins/DixlaseCookie/database/migrations',
+            '--realpath' => false,
+        ]);
+
         $this->provider = new CookieConsentStateProvider();
+    }
+
+    /**
+     * Bind a request carrying the consent cookie so `request()` inside
+     * the provider resolves the given UUID. Pass null for "no cookie".
+     */
+    private function withConsentCookie(?string $consentId): void
+    {
+        $cookies = $consentId === null
+            ? []
+            : [CookieConsentStateProvider::COOKIE_NAME => $consentId];
+
+        $this->app->instance(
+            'request',
+            Request::create('/', 'GET', [], $cookies),
+        );
+    }
+
+    /**
+     * Insert one append-only consent row. `consentedAt` is given as an
+     * offset string so tests can order rows deterministically.
+     *
+     * @param  array<string, bool>  $categories
+     */
+    private function recordConsent(
+        string $consentId,
+        array $categories,
+        int $policyVersion = 1,
+        string $consentedAt = '2026-06-24 12:00:00',
+    ): DixlaseCookieConsent {
+        return DixlaseCookieConsent::create([
+            'consent_id' => $consentId,
+            'categories' => $categories,
+            'policy_version' => $policyVersion,
+            'consented_at' => $consentedAt,
+        ]);
     }
 
     public function test_implements_the_core_contract(): void
@@ -65,47 +112,119 @@ class CookieConsentStateProviderTest extends TestCase
 
     public function test_necessary_category_is_always_granted(): void
     {
-        // The `necessary` category is implicit — the site cannot
-        // function without it (CSRF, session, the consent record
-        // itself). Implementations MUST return true for it.
+        // `necessary` is implicit — granted even with no cookie at all.
+        $this->withConsentCookie(null);
+
         $this->assertTrue($this->provider->has(ConsentCategory::Necessary->value));
         $this->assertTrue($this->provider->has('necessary'));
     }
 
-    public function test_non_necessary_standard_categories_default_to_false(): void
+    public function test_without_a_cookie_only_necessary_is_granted(): void
     {
-        // Without an accept action, no consent has been given for
-        // these categories. Returning true here would be a GDPR
-        // violation — that is what the stub is guarding against.
+        $this->withConsentCookie(null);
+
         $this->assertFalse($this->provider->has(ConsentCategory::Functional->value));
         $this->assertFalse($this->provider->has(ConsentCategory::Analytics->value));
         $this->assertFalse($this->provider->has(ConsentCategory::Marketing->value));
+        $this->assertSame([], $this->provider->snapshot());
+    }
+
+    public function test_cookie_without_a_matching_row_falls_back_to_denied(): void
+    {
+        // A stray / forged cookie value that maps to no stored row must
+        // not grant anything beyond the implicit necessary category.
+        $this->withConsentCookie('00000000-0000-0000-0000-000000000000');
+
+        $this->assertSame([], $this->provider->snapshot());
+        $this->assertFalse($this->provider->has(ConsentCategory::Analytics->value));
+        $this->assertTrue($this->provider->has(ConsentCategory::Necessary->value));
+    }
+
+    public function test_recorded_decision_drives_the_snapshot(): void
+    {
+        $uuid = '11111111-1111-1111-1111-111111111111';
+        $this->recordConsent($uuid, [
+            'necessary' => true,
+            'functional' => true,
+            'analytics' => true,
+            'marketing' => false,
+        ]);
+        $this->withConsentCookie($uuid);
+
+        $this->assertSame([
+            'necessary' => true,
+            'functional' => true,
+            'analytics' => true,
+            'marketing' => false,
+        ], $this->provider->snapshot());
+
+        $this->assertTrue($this->provider->has(ConsentCategory::Functional->value));
+        $this->assertTrue($this->provider->has(ConsentCategory::Analytics->value));
+        $this->assertFalse($this->provider->has(ConsentCategory::Marketing->value));
+    }
+
+    public function test_latest_row_wins_append_only_log(): void
+    {
+        $uuid = '22222222-2222-2222-2222-222222222222';
+        // Earlier action granted analytics; a later action withdrew it.
+        $this->recordConsent($uuid, ['necessary' => true, 'analytics' => true], 1, '2026-06-24 10:00:00');
+        $this->recordConsent($uuid, ['necessary' => true, 'analytics' => false], 1, '2026-06-24 11:00:00');
+        $this->withConsentCookie($uuid);
+
+        $this->assertFalse($this->provider->has(ConsentCategory::Analytics->value));
+    }
+
+    public function test_stale_policy_version_is_treated_as_no_decision(): void
+    {
+        // Visitor agreed under policy v1, but the operator has bumped to v2.
+        $uuid = '33333333-3333-3333-3333-333333333333';
+        $this->recordConsent($uuid, ['necessary' => true, 'analytics' => true], 1);
+        DixlaseCookieSetting::setValue(CookieConsentStateProvider::VERSION_SETTING_KEY, '2');
+        $this->withConsentCookie($uuid);
+
+        $this->assertSame([], $this->provider->snapshot());
+        $this->assertFalse($this->provider->has(ConsentCategory::Analytics->value));
+        $this->assertTrue($this->provider->has(ConsentCategory::Necessary->value));
+    }
+
+    public function test_necessary_is_forced_true_in_a_non_empty_snapshot(): void
+    {
+        // Even a malformed row that stored necessary=false must surface
+        // necessary as granted per the contract.
+        $uuid = '44444444-4444-4444-4444-444444444444';
+        $this->recordConsent($uuid, ['necessary' => false, 'analytics' => true]);
+        $this->withConsentCookie($uuid);
+
+        $snapshot = $this->provider->snapshot();
+        $this->assertTrue($snapshot['necessary']);
+        $this->assertTrue($this->provider->has(ConsentCategory::Necessary->value));
     }
 
     public function test_unknown_category_returns_false(): void
     {
-        // The contract accepts arbitrary strings (plugin-defined
-        // categories). An unknown one MUST return false, never throw
-        // and never accidentally default to true.
+        $uuid = '55555555-5555-5555-5555-555555555555';
+        $this->recordConsent($uuid, ['necessary' => true, 'analytics' => true]);
+        $this->withConsentCookie($uuid);
+
         $this->assertFalse($this->provider->has('marketing-email'));
         $this->assertFalse($this->provider->has(''));
         $this->assertFalse($this->provider->has('NECESSARY'));
     }
 
-    public function test_snapshot_is_empty_until_a_visitor_decision_is_recorded(): void
+    public function test_version_defaults_to_one_when_setting_is_absent(): void
     {
-        // The contract distinguishes "absent from snapshot" (not
-        // asked) from "present and false" (asked and denied). The
-        // stub has no visitor decision yet, so the snapshot is empty
-        // — including `necessary`, which is implicit but unrecorded.
-        $this->assertSame([], $this->provider->snapshot());
+        $this->assertSame(1, $this->provider->version());
     }
 
-    public function test_version_defaults_to_one(): void
+    public function test_version_reads_the_setting_and_clamps_to_at_least_one(): void
     {
-        // Initial policy version. B-2 will replace this with a
-        // setting lookup so the operator-controlled bump action
-        // invalidates all existing client cookies.
+        DixlaseCookieSetting::setValue(CookieConsentStateProvider::VERSION_SETTING_KEY, '5');
+        $this->assertSame(5, $this->provider->version());
+
+        DixlaseCookieSetting::setValue(CookieConsentStateProvider::VERSION_SETTING_KEY, '0');
+        $this->assertSame(1, $this->provider->version());
+
+        DixlaseCookieSetting::setValue(CookieConsentStateProvider::VERSION_SETTING_KEY, 'not-a-number');
         $this->assertSame(1, $this->provider->version());
     }
 }
