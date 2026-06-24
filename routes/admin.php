@@ -31,6 +31,7 @@
  */
 
 use Illuminate\Support\Facades\Route;
+use Plugins\DixlaseCookie\App\Http\Controllers\Admin\CookieAdminController;
 
 /*
 |--------------------------------------------------------------------------
@@ -51,5 +52,14 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// 管理画面用のルート
-// 例: Route::resource('dixlase-cookie', Controller::class);
+Route::prefix('cookie')
+    ->name('dixlase-cookie::admin.cookie.')
+    ->group(function () {
+        // Banner settings (enable, lifetime, policy URLs).
+        Route::get('/settings', [CookieAdminController::class, 'index'])->name('settings.index');
+        Route::patch('/settings', [CookieAdminController::class, 'update'])->name('settings.update');
+
+        // Bump the consent version to re-prompt every visitor.
+        Route::post('/settings/bump-version', [CookieAdminController::class, 'bumpVersion'])
+            ->name('settings.bump-version');
+    });

@@ -30,31 +30,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-/*
-|--------------------------------------------------------------------------
-| 管理画面ナビゲーション設定
-|--------------------------------------------------------------------------
-|
-| 管理画面のサイドバーに表示されるメニュー項目を定義します。
-| このファイルが不要な場合は削除してください。
-|
-*/
-
 return [
-    // Independent "Cookie" section (kept separate from DixlaseLegal so the
-    // plugin stands on its own with no Legal dependency).
     'cookie' => [
-        '_insert_after' => 'front',
-        'text' => 'dixlase-cookie::admin/navigation.cookie.text',
-        'icon' => 'fas fa-fw fa-cookie-bite',
-        'can' => 'admin',
-        'children' => [
-            'cookie-settings' => [
-                'text' => 'dixlase-cookie::admin/navigation.cookie.cookie-settings',
-                'route' => 'dixlase-cookie::admin.cookie.settings.index',
-                'icon' => 'fas fa-fw fa-cog',
-                'can' => 'admin',
-            ],
-        ],
+        'text' => 'Cookie 同意',
+        'cookie-settings' => 'バナー設定',
     ],
 ];

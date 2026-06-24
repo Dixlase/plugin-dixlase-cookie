@@ -57,22 +57,15 @@ use App\Enums\MemberRole;
 
 return [
     'permissions' => [
-        // // 一覧画面
-        // 'settings.dixlase-cookie.index' => [
-        //     'access_roles' => MemberRole::EDITOR->value,
-        //     'view_roles' => MemberRole::EDITOR->value,
-        // ],
-        //
-        // // 作成画面
-        // 'settings.dixlase-cookie.create' => [
-        //     'access_roles' => MemberRole::EDITOR->value,
-        //     'view_roles' => MemberRole::EDITOR->value,
-        // ],
-        //
-        // // 設定画面（管理者のみ）
-        // 'settings.dixlase-cookie.settings' => [
-        //     'access_roles' => MemberRole::ADMIN->value,
-        //     'view_roles' => MemberRole::ADMIN->value,
-        // ],
+        // Section landing + settings screen: admin-only, matching the
+        // navigation 'can' => 'admin' gate.
+        'cookie.cookie.index' => [
+            'access_roles' => MemberRole::ADMIN->value,
+            'view_roles' => MemberRole::ADMIN->value,
+        ],
+        'cookie.cookie-settings.index' => [
+            'access_roles' => MemberRole::ADMIN->value,
+            'view_roles' => MemberRole::ADMIN->value,
+        ],
     ],
 ];
