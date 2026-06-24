@@ -32,8 +32,10 @@
 
 namespace Plugins\DixlaseCookie\App\Providers;
 
+use App\Contracts\Cookie\ConsentStateProviderInterface;
 use App\Contracts\CspPolicyProvider;
 use Illuminate\Support\ServiceProvider;
+use Plugins\DixlaseCookie\App\Services\CookieConsentStateProvider;
 
 /**
  * プラグインのServiceProvider
@@ -54,6 +56,16 @@ class DixlaseCookieServiceProvider extends ServiceProvider implements CspPolicyP
         $this->mergeConfigFrom(
             __DIR__ . '/../../config/dixlase_cookie.php',
             'dixlase_cookie'
+        );
+
+        // Core 側で定義された App\Contracts\Cookie\ConsentStateProviderInterface
+        // を本プラグインの実装にバインドする。これにより DixlaseSEO 等の
+        // 消費プラグインは app()->bound(ConsentStateProviderInterface::class)
+        // で本プラグインの有無を soft-dependency として判定できる。
+        // 現在は B-1 スタブ実装。B-2 / B-3 で永続 Cookie 読み込みに置き換える。
+        $this->app->singleton(
+            ConsentStateProviderInterface::class,
+            CookieConsentStateProvider::class,
         );
     }
 
