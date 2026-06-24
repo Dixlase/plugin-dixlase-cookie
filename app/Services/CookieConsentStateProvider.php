@@ -94,6 +94,31 @@ final class CookieConsentStateProvider implements ConsentStateProviderInterface
     }
 
     /**
+     * Whether the operator currently has the consent banner switched on.
+     *
+     * This is NOT part of {@see ConsentStateProviderInterface}; it is an
+     * optional probe consumers may duck-type for. When the banner is off,
+     * no consent is being collected from visitors, so a consumer that gates
+     * trackers on consent (DixlaseSEO's GA tag) should treat the site as
+     * having no active gating and emit as usual — rather than suppressing
+     * trackers forever against a banner the visitor can never answer.
+     *
+     * Mirrors the toggle the banner-injection middleware reads, so the two
+     * stay in lock-step. Unreadable settings (e.g. table not migrated yet)
+     * collapse to "off" so a half-installed site never blocks indefinitely.
+     */
+    public function isBannerEnabled(): bool
+    {
+        try {
+            return (bool) DixlaseCookieSetting::getValue(
+                \Plugins\DixlaseCookie\App\Http\Middleware\InjectCookieConsentBanner::ENABLED_SETTING_KEY
+            );
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
+    /**
      * {@inheritDoc}
      *
      * Resolves the visitor's most recent consent row from the cookie
