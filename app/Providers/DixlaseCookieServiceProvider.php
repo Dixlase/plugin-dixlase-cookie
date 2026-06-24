@@ -34,7 +34,9 @@ namespace Plugins\DixlaseCookie\App\Providers;
 
 use App\Contracts\Cookie\ConsentStateProviderInterface;
 use App\Contracts\CspPolicyProvider;
+use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
+use Plugins\DixlaseCookie\App\Http\Middleware\InjectCookieConsentBanner;
 use Plugins\DixlaseCookie\App\Services\CookieConsentStateProvider;
 
 /**
@@ -62,7 +64,7 @@ class DixlaseCookieServiceProvider extends ServiceProvider implements CspPolicyP
         // を本プラグインの実装にバインドする。これにより DixlaseSEO 等の
         // 消費プラグインは app()->bound(ConsentStateProviderInterface::class)
         // で本プラグインの有無を soft-dependency として判定できる。
-        // 現在は B-1 スタブ実装。B-2 / B-3 で永続 Cookie 読み込みに置き換える。
+        // 実装は永続 Cookie を読む CookieConsentStateProvider（B-3a）。
         $this->app->singleton(
             ConsentStateProviderInterface::class,
             CookieConsentStateProvider::class,
@@ -86,6 +88,9 @@ class DixlaseCookieServiceProvider extends ServiceProvider implements CspPolicyP
         // マイグレーションの登録
         $this->loadMigrationsFrom(__DIR__ . '/../../database/migrations');
 
+        // クッキー同意バナー注入ミドルウェアを web グループに登録
+        $this->registerCookieConsentMiddleware();
+
         // 注: ルート（routes/web.php, routes/admin.php, routes/api.php）はPluginServiceProviderが自動読み込み
 
         // 公開可能なアセット
@@ -101,8 +106,22 @@ class DixlaseCookieServiceProvider extends ServiceProvider implements CspPolicyP
     }
 
     /**
+     * Register the cookie-consent banner injector on the web group.
+     *
+     * Pushing it onto the group (rather than a route middleware) lets it
+     * post-process every front-end HTML response and inject the banner
+     * just before </body> when the visitor has no current consent.
+     */
+    protected function registerCookieConsentMiddleware(): void
+    {
+        /** @var Router $router */
+        $router = $this->app->make(Router::class);
+        $router->pushMiddlewareToGroup('web', InjectCookieConsentBanner::class);
+    }
+
+    /**
      * CSPポリシーを登録
-     * 
+     *
      * 外部リソースが不要な場合は、このメソッドと
      * getCspDirectives() メソッドを削除してください。
      */
