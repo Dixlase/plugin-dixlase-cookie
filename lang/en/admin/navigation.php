@@ -32,7 +32,7 @@
 
 return [
     'cookie' => [
-        'text' => 'Cookie Consent',
-        'cookie-settings' => 'Banner Settings',
+        'text' => 'Cookie Management',
+        'cookie-settings' => 'Cookie Management Settings',
     ],
 ];

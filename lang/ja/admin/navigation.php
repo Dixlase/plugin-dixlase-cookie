@@ -32,7 +32,7 @@
 
 return [
     'cookie' => [
-        'text' => 'Cookie 同意',
-        'cookie-settings' => 'バナー設定',
+        'text' => 'Cookie 管理',
+        'cookie-settings' => 'Cookie 管理設定',
     ],
 ];
