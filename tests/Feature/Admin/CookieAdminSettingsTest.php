@@ -35,9 +35,11 @@ namespace Plugins\DixlaseCookie\Tests\Feature\Admin;
 use App\Contracts\Cookie\ConsentStateProviderInterface;
 use App\Enums\MemberRole;
 use App\Enums\MemberStatus;
+use App\Events\ConsentChanged;
 use App\Models\Member;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Plugins\DixlaseCookie\App\Http\Controllers\Admin\CookieAdminController;
 use Plugins\DixlaseCookie\App\Http\Middleware\InjectCookieConsentBanner;
@@ -200,5 +202,16 @@ class CookieAdminSettingsTest extends TestCase
 
         $this->assertSame('2', DixlaseCookieSetting::getValue(CookieConsentStateProvider::VERSION_SETTING_KEY));
         $this->assertSame(2, app(ConsentStateProviderInterface::class)->version());
+    }
+
+    public function test_bump_version_does_not_dispatch_consent_changed(): void
+    {
+        // A global version bump is not a per-visitor decision — the
+        // ConsentChanged event must fire only when a visitor re-consents.
+        Event::fake([ConsentChanged::class]);
+
+        $this->actingAs($this->admin, 'member')->post($this->bumpUrl)->assertRedirect();
+
+        Event::assertNotDispatched(ConsentChanged::class);
     }
 }

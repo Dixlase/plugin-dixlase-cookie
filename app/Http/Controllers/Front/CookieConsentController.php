@@ -100,17 +100,38 @@ class CookieConsentController extends Controller
             $this->currentLifetimeDays() * 24 * 60,
         );
 
-        // A visitor-initiated decision is always a consent change event,
-        // even when the category map is unchanged from a prior action —
-        // the recorded row is the source of truth. (B-6 refines the
-        // dispatch semantics and adds integration coverage.)
-        ConsentChanged::dispatch($previous, $current, $version);
+        // The row is always appended (full audit log), but ConsentChanged
+        // fires only when the effective decision actually changed — true
+        // to the event's name. A first-time decision (previous === []) is
+        // always a change, including a first-time "reject all", because
+        // "not asked yet" differs from "asked and denied". An identical
+        // re-submit appends a row but dispatches nothing.
+        if ($this->snapshotsDiffer($previous, $current)) {
+            ConsentChanged::dispatch($previous, $current, $version);
+        }
 
         return response()->json([
             'status' => 'ok',
             'consent' => $current,
             'version' => $version,
         ]);
+    }
+
+    /**
+     * Whether two consent snapshots represent different decisions,
+     * compared order-insensitively so key ordering never causes a false
+     * "changed". An empty previous (first-time visitor) differs from any
+     * non-empty current.
+     *
+     * @param  array<string, bool>  $previous
+     * @param  array<string, bool>  $current
+     */
+    private function snapshotsDiffer(array $previous, array $current): bool
+    {
+        ksort($previous);
+        ksort($current);
+
+        return $previous !== $current;
     }
 
     /**
