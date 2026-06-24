@@ -42,20 +42,20 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 /**
  * Inject the cookie-consent banner into front-end HTML responses.
  *
- * The banner HTML is inserted just before </body> on responses that
- * satisfy ALL of the following:
+ * The consent UI HTML is inserted just before </body> on responses
+ * that satisfy ALL of the following:
  * - the response is text/html
  * - the request is not an admin-area request
  * - the cookie_consent_enabled setting is on
- * - the visitor has no current consent on record — i.e. the consent
- *   provider's snapshot is empty (no cookie, no matching row, or the
- *   stored decision predates the current policy version). An operator
- *   version bump therefore re-shows the banner globally without us
- *   touching client storage.
  *
- * The banner is intentionally never shown to a visitor who already has
- * a current decision; re-opening it for them is the withdrawal UI's job
- * (B-4), reached from a persistent "Cookie settings" entry point.
+ * The same markup serves both roles (B-3c banner + B-4 withdrawal UI):
+ * it always carries a persistent "Cookie settings" trigger so a visitor
+ * can re-open the editor at any time, and the panel auto-opens as a
+ * banner only when the visitor has no current decision on record (the
+ * provider's snapshot is empty — no cookie, no matching row, or the
+ * stored decision predates the current policy version). The panel's
+ * toggles are pre-filled from the current snapshot so a returning
+ * visitor sees and can change their actual choices.
  */
 class InjectCookieConsentBanner
 {
@@ -109,30 +109,33 @@ class InjectCookieConsentBanner
             return false;
         }
 
-        // Settings call comes first: if the operator has the banner
-        // disabled, the consent-state lookup below is moot.
+        // The only gate is the operator toggle: when on, the consent UI
+        // is always injected (persistent re-open trigger + auto-opening
+        // banner for visitors without a current decision).
         try {
-            $enabled = (bool) DixlaseCookieSetting::getValue(self::ENABLED_SETTING_KEY);
+            return (bool) DixlaseCookieSetting::getValue(self::ENABLED_SETTING_KEY);
         } catch (\Throwable $e) {
             return false;
         }
-        if (! $enabled) {
-            return false;
-        }
+    }
 
-        // A non-empty snapshot means the visitor has a current decision
-        // on record (matching the live policy version) — suppress the
-        // banner. An empty snapshot means "not asked yet" → show it.
+    /**
+     * Read the visitor's current consent snapshot from the provider, or
+     * an empty array when none is bound / it errors.
+     *
+     * @return array<string, bool>
+     */
+    protected function currentSnapshot(): array
+    {
         try {
             if (! app()->bound(ConsentStateProviderInterface::class)) {
-                return true;
+                return [];
             }
-            $snapshot = app(ConsentStateProviderInterface::class)->snapshot();
-        } catch (\Throwable $e) {
-            return true;
-        }
 
-        return $snapshot === [];
+            return app(ConsentStateProviderInterface::class)->snapshot();
+        } catch (\Throwable $e) {
+            return [];
+        }
     }
 
     /**
@@ -160,8 +163,15 @@ class InjectCookieConsentBanner
     protected function renderBanner(): string
     {
         try {
+            $current = $this->currentSnapshot();
+
             return view('dixlase-cookie::front.cookie-consent-banner', [
                 'links' => $this->resolveLinks(),
+                // Auto-open as a banner only when there is no current
+                // decision; otherwise the panel stays closed behind the
+                // persistent "Cookie settings" trigger.
+                'autoOpen' => $current === [],
+                'current' => $current,
             ])->render();
         } catch (\Throwable $e) {
             return '';

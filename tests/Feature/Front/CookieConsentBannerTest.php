@@ -91,47 +91,52 @@ class CookieConsentBannerTest extends TestCase
         $router->getRoutes()->refreshActionLookups();
     }
 
-    public function test_banner_is_injected_when_enabled_and_no_consent_recorded(): void
+    public function test_panel_auto_opens_as_a_banner_when_enabled_and_no_consent(): void
     {
         DixlaseCookieSetting::setValue(InjectCookieConsentBanner::ENABLED_SETTING_KEY, '1');
 
         $response = $this->get($this->pageUrl);
 
         $response->assertOk();
+        $response->assertSee('data-cookie-consent', false);
+        // Auto-opens as a banner on first visit.
+        $response->assertSee('data-autoopen="1"', false);
         $response->assertSee('role="dialog"', false);
         $response->assertSee('/cookie-consent/accept', false);
         $response->assertSee(__('dixlase-cookie::front/cookie-consent.accept_all'), false);
-        // The four category labels are present.
         $response->assertSee(__('dixlase-cookie::front/cookie-consent.analytics_label'), false);
+        // The persistent re-open trigger is always present.
+        $response->assertSee('data-cookie-consent-trigger', false);
+        $response->assertSee(__('dixlase-cookie::front/cookie-consent.reopen'), false);
     }
 
-    public function test_banner_is_not_injected_when_disabled(): void
+    public function test_nothing_is_injected_when_disabled(): void
     {
         DixlaseCookieSetting::setValue(InjectCookieConsentBanner::ENABLED_SETTING_KEY, '0');
 
         $response = $this->get($this->pageUrl);
 
         $response->assertOk();
-        $response->assertDontSee('role="dialog"', false);
+        $response->assertDontSee('data-cookie-consent', false);
     }
 
-    public function test_banner_is_not_injected_when_setting_is_absent(): void
+    public function test_nothing_is_injected_when_setting_is_absent(): void
     {
         // No enabled row at all defaults to off.
         $response = $this->get($this->pageUrl);
 
         $response->assertOk();
-        $response->assertDontSee('role="dialog"', false);
+        $response->assertDontSee('data-cookie-consent', false);
     }
 
-    public function test_banner_is_suppressed_for_a_visitor_with_current_consent(): void
+    public function test_returning_visitor_gets_a_closed_panel_prefilled_with_their_choices(): void
     {
         DixlaseCookieSetting::setValue(InjectCookieConsentBanner::ENABLED_SETTING_KEY, '1');
 
         $uuid = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
         DixlaseCookieConsent::create([
             'consent_id' => $uuid,
-            'categories' => ['necessary' => true, 'analytics' => true],
+            'categories' => ['necessary' => true, 'functional' => false, 'analytics' => true, 'marketing' => false],
             'policy_version' => 1,
             'consented_at' => now(),
         ]);
@@ -143,7 +148,13 @@ class CookieConsentBannerTest extends TestCase
             ->get($this->pageUrl);
 
         $response->assertOk();
-        $response->assertDontSee('role="dialog"', false);
+        // Still injected (so withdrawal is always reachable) but closed.
+        $response->assertSee('data-cookie-consent', false);
+        $response->assertSee('data-autoopen="0"', false);
+        $response->assertSee('data-cookie-consent-trigger', false);
+        // Toggles are pre-filled from the visitor's current decision.
+        $response->assertSee('analytics: true', false);
+        $response->assertSee('marketing: false', false);
     }
 
     public function test_policy_links_render_when_url_settings_are_present(): void
