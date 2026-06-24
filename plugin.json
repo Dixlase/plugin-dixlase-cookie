@@ -1,0 +1,114 @@
+{
+    "name": "DixlaseCookie",
+    "package": "DixlaseCookie",
+    "repository": "",
+    "package_name": "plugins/dixlase-cookie",
+    "slug": "dixlase-cookie",
+    "version": "1.0.0",
+    "description": {
+        "en": "This is the DixlaseCookie plugin.",
+        "ja": "DixlaseCookieのプラグインです。"
+    },
+    "author": "exc-D inc.",
+    "author_id": "exc-d-inc",
+    "authority_key_id": "dixlase-authority-2026",
+    "email": "info@dixlase.org",
+    "url": "https://exc-d.com",
+    "license": "GPL-3.0-or-later",
+    "license_template": "license-dual-gpl.txt",
+    "commercial_license": {
+        "available": true,
+        "file": "LICENSE-COMMERCIAL",
+        "contact": "info@dixlase.org"
+    },
+    "assets": {
+        "license": null,
+        "attributions_file": null,
+        "third_party": []
+    },
+    "thumbnail": "thumbnail.png",
+    "namespace": "Plugins\\DixlaseCookie",
+    "providers": [
+        "Plugins\\DixlaseCookie\\App\\Providers\\DixlaseCookieServiceProvider"
+    ],
+    "type": "dixlase-plugin",
+    "category": "general",
+    "tags": ["custom"],
+    "capabilities": [],
+    "requires": {
+        "dixlase": "^0.1.0",
+        "dixlase_api": "^0.1",
+        "php": ">=8.2"
+    },
+    "provides": {
+        "admin_menu": false,
+        "front_routes": false,
+        "api_routes": false,
+        "settings_page": false,
+        "shortcodes": false,
+        "helper_functions": false
+    },
+    "permissions": {
+        "database": {
+            "own_tables": false,
+            "core_tables": []
+        },
+        "storage": {
+            "own_directory": false,
+            "public_uploads": false,
+            "temp_files": false
+        },
+        "settings": {
+            "read_core": false,
+            "write_own": false
+        },
+        "members": {
+            "read": false,
+            "write": false,
+            "create": false,
+            "delete": false
+        },
+        "mail": {
+            "send": false,
+            "bulk_send": false
+        },
+        "content": {
+            "read_other_plugins": [],
+            "write_other_plugins": []
+        },
+        "system": {
+            "register_shortcodes": false,
+            "register_middleware": false,
+            "register_commands": false,
+            "register_blade_directives": false,
+            "modify_routes": false
+        },
+        "_optional": [],
+        "_notes": {
+            "ja": "",
+            "en": ""
+        }
+    },
+    "declares": {
+        "configs": {
+            "roles": false,
+            "database_cleanup": false,
+            "navigation": false
+        },
+        "assets": {
+            "common": [],
+            "admin": [],
+            "front": []
+        },
+        "contracts": [],
+        "migrations": false,
+        "commands": false,
+        "middleware": false
+    },
+    "files": {},
+    "signing": {
+        "algo": "ed25519",
+        "key_id": null,
+        "signed_at": null
+    }
+}

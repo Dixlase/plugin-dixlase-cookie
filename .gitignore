@@ -1,0 +1,20 @@
+/node_modules
+/vendor
+/resources/assets/*
+!/resources/assets/thumbnail.*
+package-lock.json
+.env
+.env.backup
+.env.production
+.phpunit.result.cache
+/.phpunit.cache
+npm-debug.log
+yarn-error.log
+/.fleet
+/.idea
+/.nova
+/.vscode
+/.zed
+
+# Claude Code sandbox tests
+/tests/Sandbox/

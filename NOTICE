@@ -1,0 +1,36 @@
+=======================================================================
+
+    DixlaseCookie
+
+    Copyright (C) 2026 exc-D inc. <https://exc-d.com>
+
+    DixlaseCookie is dual-licensed. You may use it under either:
+
+      (a) the GNU General Public License version 3, as published by
+          the Free Software Foundation (see LICENSE for the full
+          GPL terms); or
+
+      (b) a commercial license agreement obtained from exc-D inc.
+          (see LICENSE-COMMERCIAL for details, or contact
+          info@dixlase.org).
+
+    Contributions to this plugin repository are governed by the
+    Dixlase Copyright Policy and the Dixlase Contributor License
+    Agreement (see CONTRIBUTING.md, which links to the canonical
+    CLA in the Dixlase Core repository).
+
+    Unless you have entered into a commercial license agreement,
+    this project is governed by the GPL terms in the LICENSE file.
+
+=======================================================================
+
+File map:
+
+    LICENSE                GNU General Public License v3 (verbatim)
+    LICENSE-COMMERCIAL     Commercial license terms (separate agreement)
+    LICENSE-COMMERCIAL.ja  Japanese counterpart of LICENSE-COMMERCIAL
+    NOTICE                 This file — project copyright and dual-license
+                           summary (English)
+    NOTICE.ja              Japanese counterpart of this file
+
+=======================================================================
