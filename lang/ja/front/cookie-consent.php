@@ -49,6 +49,9 @@ return [
     'save_selection' => '選択を保存',
     'accept_all' => 'すべて受け入れる',
 
+    'reopen' => 'Cookie の設定',
+    'close' => '閉じる',
+
     'privacy_link' => 'プライバシーポリシー',
     'cookie_link' => 'クッキーポリシー',
 ];

@@ -49,6 +49,9 @@ return [
     'save_selection' => 'Save selection',
     'accept_all' => 'Accept all',
 
+    'reopen' => 'Cookie settings',
+    'close' => 'Close',
+
     'privacy_link' => 'Privacy Policy',
     'cookie_link' => 'Cookie Policy',
 ];
