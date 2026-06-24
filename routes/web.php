@@ -31,6 +31,7 @@
  */
 
 use Illuminate\Support\Facades\Route;
+use Plugins\DixlaseCookie\App\Http\Controllers\Front\CookieConsentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -49,5 +50,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// フロントエンド用のルート
-// 例: Route::get('/dixlase-cookie', [Controller::class, 'index'])->name('dixlase-cookie.index');
+// Cookie consent: record a visitor's per-category decision (banner +
+// withdrawal UI). Intentionally outside any front.ip restriction so
+// every visitor can give or withdraw consent. CSRF protection from the
+// web middleware group still applies.
+Route::post('/cookie-consent/accept', [CookieConsentController::class, 'accept'])
+    ->name('dixlase-cookie::cookie-consent.accept');
