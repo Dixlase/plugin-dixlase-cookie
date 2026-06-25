@@ -78,51 +78,37 @@ class CookiePruneCommandTest extends TestCase
         ]);
     }
 
-    public function test_requires_a_mode(): void
-    {
-        $this->artisan('dls:cookie:prune')->assertExitCode(1);
-        $this->assertSame(0, DixlaseCookieConsent::query()->count());
-    }
-
     public function test_dry_run_deletes_nothing(): void
     {
         DixlaseCookieSetting::setValue(CookieConsentStateProvider::VERSION_SETTING_KEY, '2');
-        $this->record('a', 1, '2026-06-01 10:00:00');
-        $this->record('a', 2, '2026-06-02 10:00:00');
+        $this->record('a', 1, '2026-06-01 10:00:00'); // stale
+        $this->record('b', 2, '2026-06-02 10:00:00'); // current
 
-        $this->artisan('dls:cookie:prune', ['--stale' => true, '--keep-latest' => true, '--dry-run' => true])
-            ->assertExitCode(0);
+        $this->artisan('dls:cookie:prune', ['--dry-run' => true])->assertExitCode(0);
 
         $this->assertSame(2, DixlaseCookieConsent::query()->count());
     }
 
-    public function test_stale_mode_deletes_rows_below_current_version(): void
+    public function test_prunes_rows_below_current_version(): void
     {
         DixlaseCookieSetting::setValue(CookieConsentStateProvider::VERSION_SETTING_KEY, '2');
-        $this->record('a', 1, '2026-06-01 10:00:00'); // stale
-        $this->record('a', 2, '2026-06-02 10:00:00'); // current
-        $this->record('b', 1, '2026-06-01 11:00:00'); // stale
+        $this->record('a', 1, '2026-06-01 10:00:00'); // stale, abandoned
+        $this->record('b', 2, '2026-06-02 10:00:00'); // current
+        $this->record('c', 1, '2026-06-01 11:00:00'); // stale, abandoned
 
-        $this->artisan('dls:cookie:prune', ['--stale' => true])->assertExitCode(0);
+        $this->artisan('dls:cookie:prune')->assertExitCode(0);
 
         $this->assertSame(1, DixlaseCookieConsent::query()->count());
-        $this->assertSame(2, DixlaseCookieConsent::query()->first()->policy_version);
+        $this->assertSame('b', DixlaseCookieConsent::query()->first()->consent_id);
     }
 
-    public function test_keep_latest_mode_compacts_to_one_row_per_consent_id(): void
+    public function test_keeps_current_version_rows(): void
     {
+        // Default version is 1; a v1 row is current and must survive.
         $this->record('a', 1, '2026-06-01 10:00:00');
-        $this->record('a', 1, '2026-06-02 10:00:00'); // latest for a
-        $this->record('b', 1, '2026-06-03 10:00:00'); // only row for b
 
-        $this->artisan('dls:cookie:prune', ['--keep-latest' => true])->assertExitCode(0);
+        $this->artisan('dls:cookie:prune')->assertExitCode(0);
 
-        $this->assertSame(2, DixlaseCookieConsent::query()->count());
-        $this->assertSame(1, DixlaseCookieConsent::query()->forConsentId('a')->count());
-        $this->assertSame(1, DixlaseCookieConsent::query()->forConsentId('b')->count());
-
-        // The surviving row for "a" is the most recent one.
-        $latestA = DixlaseCookieConsent::query()->forConsentId('a')->first();
-        $this->assertSame('2026-06-02 10:00:00', $latestA->consented_at->format('Y-m-d H:i:s'));
+        $this->assertSame(1, DixlaseCookieConsent::query()->count());
     }
 }

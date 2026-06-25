@@ -36,7 +36,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * One row per visitor consent action — append-only event log.
+ * One row per visitor — the visitor's current consent state.
  *
  * The shape is intentionally minimal (see the migration's class
  * docblock): consent_id, categories JSON, policy_version,
@@ -45,12 +45,12 @@ use Illuminate\Database\Eloquent\Model;
  * DixlaseLegal's audit table per the free/paid split documented in
  * `.backlog/dixlase-legal-cookie-split-strategy.md`.
  *
- * Each visitor action (accept, withdraw, change a single category)
- * inserts a NEW row sharing the same `consent_id`. The current
- * effective state for a `consent_id` is always the most recent row.
- * Reading code should always sort by `consented_at DESC` (or `id
- * DESC` as a tiebreaker) and take the first record — there is no
- * separate "current state" column to keep in sync.
+ * `consent_id` is UNIQUE: each visitor decision (accept, withdraw,
+ * change a category) UPDATES that single row in place rather than
+ * appending, so the table holds only current state and does not grow
+ * per action. Change history is not kept here — the audit trail lives
+ * in DixlaseLegal's table, fed by the ConsentChanged event. Reading
+ * code resolves a visitor with `forConsentId($id)->first()`.
  *
  * @property int $id
  * @property string $consent_id
@@ -89,9 +89,9 @@ class DixlaseCookieConsent extends Model
     }
 
     /**
-     * Scope: rows tagged with a specific consent_id (the per-visitor
-     * cookie value). Combined with an `orderByDesc('consented_at')`
-     * + `first()` it yields the visitor's current effective decision.
+     * Scope: the row for a specific consent_id (the per-visitor cookie
+     * value). Since consent_id is unique, `forConsentId($id)->first()`
+     * yields the visitor's current decision.
      */
     public function scopeForConsentId(Builder $query, string $consentId): Builder
     {
@@ -99,9 +99,9 @@ class DixlaseCookieConsent extends Model
     }
 
     /**
-     * Scope: most-recent-first ordering by the action timestamp.
-     * Tiebreaks on `id` so two actions in the same millisecond still
-     * resolve to a stable ordering.
+     * Scope: most-recent-first ordering. With the unique consent_id this
+     * is a defensive no-op for per-visitor lookups, but kept so callers
+     * reading across visitors get a stable, predictable order.
      */
     public function scopeLatestFirst(Builder $query): Builder
     {

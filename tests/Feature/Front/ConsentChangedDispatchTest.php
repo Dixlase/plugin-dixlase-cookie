@@ -107,7 +107,7 @@ class ConsentChangedDispatchTest extends TestCase
         });
     }
 
-    public function test_identical_re_accept_appends_a_row_but_does_not_dispatch(): void
+    public function test_identical_re_accept_touches_the_row_but_does_not_dispatch(): void
     {
         $uuid = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
         DixlaseCookieConsent::create([
@@ -127,8 +127,8 @@ class ConsentChangedDispatchTest extends TestCase
 
         $response->assertOk();
 
-        // Row still appended (full audit log)...
-        $this->assertCount(2, DixlaseCookieConsent::query()->forConsentId($uuid)->get());
+        // Still one row per visitor (updated in place)...
+        $this->assertCount(1, DixlaseCookieConsent::query()->forConsentId($uuid)->get());
         // ...but nothing changed, so no event.
         Event::assertNotDispatched(ConsentChanged::class);
     }
