@@ -32,7 +32,9 @@
 
 namespace Plugins\DixlaseCookie\App\Models;
 
+use App\Enums\ConsentCategory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -74,18 +76,103 @@ class DixlaseCookieConsent extends Model
     ];
 
     /**
-     * Casts. `categories` JSON column always reads back as an
-     * associative array of {category-key => bool}.
+     * Casts. `categories` is handled by its own accessor/mutator below,
+     * not a plain array cast.
      *
      * @return array<string, string>
      */
     protected function casts(): array
     {
         return [
-            'categories' => 'array',
             'policy_version' => 'integer',
             'consented_at' => 'datetime',
         ];
+    }
+
+    /**
+     * `categories` is STORED compactly as a JSON array of granted
+     * category keys (e.g. `["necessary","analytics"]`) to keep rows
+     * small, but is PRESENTED to PHP as the full {category => bool} map
+     * the rest of the code and the Core contracts expect. The fixed
+     * category set makes the two representations equivalent: a category
+     * absent from the stored list is simply denied.
+     *
+     * Storing names (not numeric indices) means no fragile positional
+     * contract — the category string values are already part of the
+     * public API and immutable.
+     */
+    protected function categories(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => $this->expandGrantedList($value),
+            set: fn ($value) => json_encode($this->collapseToGrantedList($value)),
+        );
+    }
+
+    /**
+     * Expand the stored granted-list into a full {category => bool} map.
+     * All standard categories are present (false when not granted); any
+     * non-standard granted key is preserved as true.
+     *
+     * @return array<string, bool>
+     */
+    private function expandGrantedList(mixed $value): array
+    {
+        $list = $this->normaliseList($value);
+
+        $map = [];
+        foreach (ConsentCategory::cases() as $category) {
+            $map[$category->value] = false;
+        }
+        foreach ($list as $key) {
+            if (is_string($key)) {
+                $map[$key] = true;
+            }
+        }
+
+        return $map;
+    }
+
+    /**
+     * Collapse an incoming {category => bool} map (or an already-granted
+     * list) into a de-duplicated list of granted category keys.
+     *
+     * @return list<string>
+     */
+    private function collapseToGrantedList(mixed $value): array
+    {
+        if (is_string($value)) {
+            $value = json_decode($value, true);
+        }
+
+        $granted = [];
+        foreach ((array) $value as $key => $val) {
+            if (is_int($key)) {
+                // List form: the value itself is a granted category name.
+                if (is_string($val)) {
+                    $granted[] = $val;
+                }
+            } elseif ($val) {
+                // Map form: include the key when the flag is truthy.
+                $granted[] = $key;
+            }
+        }
+
+        return array_values(array_unique($granted));
+    }
+
+    /**
+     * Decode the raw stored value into a plain array of keys.
+     *
+     * @return array<int, mixed>
+     */
+    private function normaliseList(mixed $value): array
+    {
+        if (is_string($value)) {
+            $value = json_decode($value, true);
+        }
+
+        return is_array($value) ? array_values($value) : [];
     }
 
     /**

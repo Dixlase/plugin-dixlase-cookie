@@ -55,9 +55,12 @@ use Illuminate\Support\Facades\Schema;
  *                     value persisted in the visitor's
  *                     `dixlase_cookie_consent_id` browser cookie so
  *                     subsequent requests resolve to this row
- * - `categories`     JSON map of {category => bool} for the visitor's
- *                     current decision; `necessary` is always present
- *                     and true
+ * - `categories`     compact JSON array of the granted category keys
+ *                     for the visitor's current decision (e.g.
+ *                     ["necessary","analytics"]); a category absent from
+ *                     the list is denied. The model presents this as the
+ *                     full {category => bool} map the rest of the code
+ *                     expects
  * - `policy_version` operator-controlled `cookie_consent_version`
  *                     value at the time of the decision; records which
  *                     policy iteration was agreed to
