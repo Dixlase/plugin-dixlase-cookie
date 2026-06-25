@@ -146,7 +146,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             {{-- Compact category toggles using the core x-form-toggle
                  component. Per-category descriptions intentionally live in the
                  linked cookie policy, not inline, to keep the banner small. --}}
-            <div class="grid gap-x-8 gap-y-0 sm:grid-cols-2">
+            <div class="grid grid-cols-2 gap-x-4 gap-y-0 md:grid-cols-4">
                 <div class="flex items-center gap-2">
                     <x-form-toggle
                         name="cookie_necessary"

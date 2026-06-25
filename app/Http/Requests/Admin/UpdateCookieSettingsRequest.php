@@ -74,19 +74,27 @@ class UpdateCookieSettingsRequest extends FormRequest
     }
 
     /**
-     * A validation closure that accepts an empty value, a site-relative
-     * path ("/..."), or a syntactically valid absolute URL.
+     * A permissive link rule: accepts an empty value, an absolute http(s)
+     * URL, or any site path (with or without a leading slash, e.g.
+     * "/privacy" or "legal/privacy-policy"). It rejects only other URI
+     * schemes (javascript:, data:, mailto:, …) so the value stays safe to
+     * render as an href.
      */
     private function urlOrPathRule(): Closure
     {
         return function (string $attribute, mixed $value, Closure $fail): void {
-            if ($value === null || $value === '') {
+            if (! is_string($value) || $value === '') {
                 return;
             }
-            if (is_string($value) && str_starts_with($value, '/')) {
+
+            // Absolute http(s) URLs are always allowed.
+            if (preg_match('#^https?://#i', $value) === 1) {
                 return;
             }
-            if (! is_string($value) || filter_var($value, FILTER_VALIDATE_URL) === false) {
+
+            // Any other explicit URI scheme is rejected; everything else is
+            // treated as a site path and accepted.
+            if (preg_match('#^[a-z][a-z0-9+.\-]*:#i', $value) === 1) {
                 $fail(__('dixlase-cookie::admin/cookie/settings/index.url_invalid'));
             }
         };

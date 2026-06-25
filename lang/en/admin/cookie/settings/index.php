@@ -42,10 +42,10 @@ return [
     'lifetime_help' => 'How long the visitor\'s choice is remembered before they are asked again. 1–:max days (default 365).',
 
     'links_heading' => 'Policy links',
-    'links_help' => 'Optional links shown in the banner. Enter an absolute URL (https://…) or a site-relative path (/privacy). Leave blank to hide a link.',
+    'links_help' => 'Optional links shown in the banner. Enter an absolute http(s) URL or a path (e.g. /privacy or legal/privacy-policy). Leave blank to hide a link.',
     'privacy_url_label' => 'Privacy Policy',
     'cookie_url_label' => 'Cookie Policy',
-    'url_invalid' => 'Enter a valid URL or a path beginning with "/".',
+    'url_invalid' => 'Enter an absolute http(s) URL or a path. Schemes such as javascript: are not allowed.',
 
     'version_heading' => 'Re-prompt all visitors',
     'version_help' => 'Current consent version: :version. Bumping the version invalidates every stored choice so the banner re-appears for everyone — use this after a privacy policy revision.',
