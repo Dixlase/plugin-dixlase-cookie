@@ -163,14 +163,22 @@ class CookieConsentStateProviderTest extends TestCase
         $this->assertFalse($this->provider->has(ConsentCategory::Marketing->value));
     }
 
-    public function test_latest_row_wins_append_only_log(): void
+    public function test_updating_the_row_in_place_reflects_the_new_state(): void
     {
         $uuid = '22222222-2222-2222-2222-222222222222';
-        // Earlier action granted analytics; a later action withdrew it.
-        $this->recordConsent($uuid, ['necessary' => true, 'analytics' => true], 1, '2026-06-24 10:00:00');
-        $this->recordConsent($uuid, ['necessary' => true, 'analytics' => false], 1, '2026-06-24 11:00:00');
+        // First decision grants analytics; the visitor later withdraws it.
+        // The same row is updated in place (one row per consent_id).
+        DixlaseCookieConsent::updateOrCreate(
+            ['consent_id' => $uuid],
+            ['categories' => ['necessary' => true, 'analytics' => true], 'policy_version' => 1, 'consented_at' => '2026-06-24 10:00:00'],
+        );
+        DixlaseCookieConsent::updateOrCreate(
+            ['consent_id' => $uuid],
+            ['categories' => ['necessary' => true, 'analytics' => false], 'policy_version' => 1, 'consented_at' => '2026-06-24 11:00:00'],
+        );
         $this->withConsentCookie($uuid);
 
+        $this->assertSame(1, DixlaseCookieConsent::query()->forConsentId($uuid)->count());
         $this->assertFalse($this->provider->has(ConsentCategory::Analytics->value));
     }
 

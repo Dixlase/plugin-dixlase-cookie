@@ -139,7 +139,7 @@ class CookieConsentAcceptTest extends TestCase
         ], $row->categories);
     }
 
-    public function test_existing_consent_id_cookie_is_reused_and_history_grows(): void
+    public function test_existing_consent_id_cookie_is_reused_and_updated_in_place(): void
     {
         $uuid = '99999999-9999-9999-9999-999999999999';
 
@@ -167,9 +167,10 @@ class CookieConsentAcceptTest extends TestCase
 
         $response->assertOk();
 
-        // A new row was appended under the SAME consent_id (event log).
+        // The SAME row was updated in place — no new row, one per visitor.
         $rows = DixlaseCookieConsent::query()->forConsentId($uuid)->get();
-        $this->assertCount(2, $rows);
+        $this->assertCount(1, $rows);
+        $this->assertFalse($rows->first()->categories['analytics']);
         $response->assertCookie(CookieConsentStateProvider::COOKIE_NAME, $uuid, encrypted: false);
 
         Event::assertDispatched(ConsentChanged::class, function (ConsentChanged $event) {

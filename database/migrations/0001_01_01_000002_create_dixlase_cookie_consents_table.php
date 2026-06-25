@@ -43,26 +43,26 @@ use Illuminate\Support\Facades\Schema;
  * session id) lives on DixlaseLegal's separate audit table, so the
  * shape here does NOT include any of those columns by design.
  *
- * Each visitor action (accept, withdraw, change a single category)
- * inserts a new row. The current state for a given `consent_id` is
- * always the most recent row — the table is append-only, an
- * implicit event log. This keeps the schema future-proof for the
- * withdrawal UI (B-4) without needing a schema change.
+ * One row per visitor (keyed by the unique `consent_id`). Each new
+ * decision — accept, withdraw, change a category — UPDATES that single
+ * row in place rather than appending, so the table holds only the
+ * visitor's current state and does not grow per action. Full change
+ * history is not kept here on purpose: the audit trail belongs to
+ * DixlaseLegal's separate table, populated via the ConsentChanged event.
  *
  * Fields:
- * - `consent_id`     UUID issued at first accept; matches the
+ * - `consent_id`     UUID issued at first accept; UNIQUE. Matches the
  *                     value persisted in the visitor's
  *                     `dixlase_cookie_consent_id` browser cookie so
- *                     subsequent requests can resolve their history
- * - `categories`     JSON snapshot of {category => bool} at the
- *                     time of this action; `necessary` is always
- *                     present and true
+ *                     subsequent requests resolve to this row
+ * - `categories`     JSON map of {category => bool} for the visitor's
+ *                     current decision; `necessary` is always present
+ *                     and true
  * - `policy_version` operator-controlled `cookie_consent_version`
- *                     value at the time of this action; records
- *                     which policy iteration was being agreed to
- * - `consented_at`   wall-clock time of this action; distinct
- *                     from `created_at` so a future bulk import
- *                     can preserve the original timestamp
+ *                     value at the time of the decision; records which
+ *                     policy iteration was agreed to
+ * - `consented_at`   wall-clock time of the latest decision; distinct
+ *                     from `created_at` (first consent) / `updated_at`
  */
 return new class extends Migration
 {
@@ -70,7 +70,7 @@ return new class extends Migration
     {
         Schema::create('plg_dixlase_cookie_consents', function (Blueprint $table) {
             $table->id();
-            $table->string('consent_id', 36)->index();
+            $table->string('consent_id', 36)->unique();
             $table->json('categories');
             $table->unsignedInteger('policy_version');
             $table->timestamp('consented_at');

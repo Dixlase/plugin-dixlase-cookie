@@ -87,12 +87,18 @@ class CookieConsentController extends Controller
         $consentId = $this->resolveConsentId($request);
         $current = $request->consentedCategories();
 
-        DixlaseCookieConsent::create([
-            'consent_id' => $consentId,
-            'categories' => $current,
-            'policy_version' => $version,
-            'consented_at' => now(),
-        ]);
+        // Upsert by consent_id: one row per visitor, updated in place.
+        // The full change history is captured separately by DixlaseLegal's
+        // audit listener on the ConsentChanged event, so this table only
+        // ever holds the visitor's current decision.
+        DixlaseCookieConsent::updateOrCreate(
+            ['consent_id' => $consentId],
+            [
+                'categories' => $current,
+                'policy_version' => $version,
+                'consented_at' => now(),
+            ],
+        );
 
         Cookie::queue(
             CookieConsentStateProvider::COOKIE_NAME,
