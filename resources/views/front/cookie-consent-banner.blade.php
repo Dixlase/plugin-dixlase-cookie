@@ -59,10 +59,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
      data-autoopen="{{ $autoOpen ? '1' : '0' }}"
      x-data="{
         open: {{ $autoOpen ? 'true' : 'false' }},
+        {{-- Strings '1'/'0' to match the core x-form-toggle xModel contract. --}}
         cats: {
-            functional: {{ ($current['functional'] ?? false) ? 'true' : 'false' }},
-            analytics: {{ ($current['analytics'] ?? false) ? 'true' : 'false' }},
-            marketing: {{ ($current['marketing'] ?? false) ? 'true' : 'false' }}
+            functional: '{{ ($current['functional'] ?? false) ? '1' : '0' }}',
+            analytics: '{{ ($current['analytics'] ?? false) ? '1' : '0' }}',
+            marketing: '{{ ($current['marketing'] ?? false) ? '1' : '0' }}'
         },
         async submit(payload) {
             try {
@@ -78,8 +79,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 if (r.ok) this.open = false;
             } catch (e) {}
         },
-        acceptAll() { this.cats = { functional: true, analytics: true, marketing: true }; this.submit(this.cats); },
-        rejectAll() { this.cats = { functional: false, analytics: false, marketing: false }; this.submit(this.cats); },
+        acceptAll() { this.cats = { functional: '1', analytics: '1', marketing: '1' }; this.submit(this.cats); },
+        rejectAll() { this.cats = { functional: '0', analytics: '0', marketing: '0' }; this.submit(this.cats); },
         saveSelection() { this.submit(this.cats); }
      }">
 
@@ -142,44 +143,35 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endif
             </div>
 
-            <div class="grid gap-3 sm:grid-cols-2">
-                {{-- Necessary: implicit, shown as a disabled always-on toggle. --}}
-                <label class="flex items-start gap-3 rounded-md border border-gray-200 dark:border-gray-700 p-3">
-                    <input type="checkbox" checked disabled
-                           class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 opacity-60 cursor-not-allowed">
-                    <span class="text-sm">
-                        <span class="font-medium text-gray-900 dark:text-gray-100">{{ __('dixlase-cookie::front/cookie-consent.necessary_label') }}</span>
-                        <span class="ml-1 inline-block rounded bg-gray-200 dark:bg-gray-700 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-gray-600 dark:text-gray-300">{{ __('dixlase-cookie::front/cookie-consent.always_on') }}</span>
-                        <span class="block text-xs text-gray-500 dark:text-gray-400">{{ __('dixlase-cookie::front/cookie-consent.necessary_description') }}</span>
-                    </span>
-                </label>
+            {{-- Compact category toggles using the core x-form-toggle
+                 component. Per-category descriptions intentionally live in the
+                 linked cookie policy, not inline, to keep the banner small. --}}
+            <div class="grid gap-x-8 gap-y-0 sm:grid-cols-2">
+                <div class="flex items-center gap-2">
+                    <x-form-toggle
+                        name="cookie_necessary"
+                        :label="__('dixlase-cookie::front/cookie-consent.necessary_label')"
+                        :checked="true"
+                        disabled
+                    />
+                    <span class="inline-block rounded bg-gray-200 dark:bg-gray-700 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-gray-600 dark:text-gray-300">{{ __('dixlase-cookie::front/cookie-consent.always_on') }}</span>
+                </div>
 
-                <label class="flex items-start gap-3 rounded-md border border-gray-200 dark:border-gray-700 p-3 cursor-pointer">
-                    <input type="checkbox" x-model="cats.functional"
-                           class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                    <span class="text-sm">
-                        <span class="font-medium text-gray-900 dark:text-gray-100">{{ __('dixlase-cookie::front/cookie-consent.functional_label') }}</span>
-                        <span class="block text-xs text-gray-500 dark:text-gray-400">{{ __('dixlase-cookie::front/cookie-consent.functional_description') }}</span>
-                    </span>
-                </label>
-
-                <label class="flex items-start gap-3 rounded-md border border-gray-200 dark:border-gray-700 p-3 cursor-pointer">
-                    <input type="checkbox" x-model="cats.analytics"
-                           class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                    <span class="text-sm">
-                        <span class="font-medium text-gray-900 dark:text-gray-100">{{ __('dixlase-cookie::front/cookie-consent.analytics_label') }}</span>
-                        <span class="block text-xs text-gray-500 dark:text-gray-400">{{ __('dixlase-cookie::front/cookie-consent.analytics_description') }}</span>
-                    </span>
-                </label>
-
-                <label class="flex items-start gap-3 rounded-md border border-gray-200 dark:border-gray-700 p-3 cursor-pointer">
-                    <input type="checkbox" x-model="cats.marketing"
-                           class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                    <span class="text-sm">
-                        <span class="font-medium text-gray-900 dark:text-gray-100">{{ __('dixlase-cookie::front/cookie-consent.marketing_label') }}</span>
-                        <span class="block text-xs text-gray-500 dark:text-gray-400">{{ __('dixlase-cookie::front/cookie-consent.marketing_description') }}</span>
-                    </span>
-                </label>
+                <x-form-toggle
+                    name="cookie_functional"
+                    :label="__('dixlase-cookie::front/cookie-consent.functional_label')"
+                    xModel="cats.functional"
+                />
+                <x-form-toggle
+                    name="cookie_analytics"
+                    :label="__('dixlase-cookie::front/cookie-consent.analytics_label')"
+                    xModel="cats.analytics"
+                />
+                <x-form-toggle
+                    name="cookie_marketing"
+                    :label="__('dixlase-cookie::front/cookie-consent.marketing_label')"
+                    xModel="cats.marketing"
+                />
             </div>
 
             <div class="flex flex-col sm:flex-row sm:justify-end gap-2">

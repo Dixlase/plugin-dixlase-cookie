@@ -78,23 +78,29 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
                 <div class="mt-3 space-y-4">
                     <div>
+                        <x-form-label
+                            for="cookie_consent_privacy_url"
+                            :text="__('dixlase-cookie::admin/cookie/settings/index.privacy_url_label')"
+                        />
                         <x-form-text
                             id="cookie_consent_privacy_url"
                             name="cookie_consent_privacy_url"
                             type="text"
                             :value="old('cookie_consent_privacy_url', $privacyUrl)"
-                            :label="__('dixlase-cookie::admin/cookie/settings/index.privacy_url_label')"
                             placeholder="/privacy"
                         />
                         <x-form-error name="cookie_consent_privacy_url" />
                     </div>
                     <div>
+                        <x-form-label
+                            for="cookie_consent_cookie_url"
+                            :text="__('dixlase-cookie::admin/cookie/settings/index.cookie_url_label')"
+                        />
                         <x-form-text
                             id="cookie_consent_cookie_url"
                             name="cookie_consent_cookie_url"
                             type="text"
                             :value="old('cookie_consent_cookie_url', $cookieUrl)"
-                            :label="__('dixlase-cookie::admin/cookie/settings/index.cookie_url_label')"
                             placeholder="/cookies"
                         />
                         <x-form-error name="cookie_consent_cookie_url" />
