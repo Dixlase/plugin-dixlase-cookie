@@ -61,6 +61,11 @@ class CookieConsentAcceptTest extends TestCase
     {
         parent::setUp();
 
+        // Treat the app as installed so web requests are not redirected to
+        // the installer (CI runs against a fresh, uninstalled Core).
+        $_ENV['INSTALLED'] = 'true';
+        $_SERVER['INSTALLED'] = 'true';
+
         Artisan::call('migrate', [
             '--path' => 'plugins/DixlaseCookie/database/migrations',
             '--realpath' => false,
