@@ -49,7 +49,7 @@ return [
     'save_selection' => 'Save selection',
     'accept_all' => 'Accept all',
 
-    'reopen' => 'Cookie settings',
+    'reopen' => 'Cookie',
     'close' => 'Close',
 
     'privacy_link' => 'Privacy Policy',
