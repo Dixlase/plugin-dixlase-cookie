@@ -42,10 +42,10 @@ return [
     'lifetime_help' => '訪問者の選択を記憶し、再度確認するまでの期間です。1〜:max 日（デフォルト 365）。',
 
     'links_heading' => 'ポリシーリンク',
-    'links_help' => 'バナーに表示する任意のリンクです。絶対 URL（https://…）またはサイト相対パス（/privacy）を入力してください。空欄にするとリンクを表示しません。',
+    'links_help' => 'バナーに表示する任意のリンクです。絶対 URL（http/https）またはパス（例: /privacy、legal/privacy-policy）を入力してください。空欄にするとリンクを表示しません。',
     'privacy_url_label' => 'プライバシーポリシー',
     'cookie_url_label' => 'クッキーポリシー',
-    'url_invalid' => '有効な URL、または「/」で始まるパスを入力してください。',
+    'url_invalid' => '絶対 URL（http/https）またはパスを入力してください。javascript: などのスキームは使用できません。',
 
     'version_heading' => '全訪問者に再同意を求める',
     'version_help' => '現在の同意バージョン: :version。バージョンを上げると保存済みの選択がすべて無効になり、全員にバナーが再表示されます。プライバシーポリシー改定後などに使用してください。',

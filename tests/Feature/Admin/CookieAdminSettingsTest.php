@@ -182,10 +182,20 @@ class CookieAdminSettingsTest extends TestCase
         $this->assertNull(DixlaseCookieSetting::getValue(InjectCookieConsentBanner::PRIVACY_URL_SETTING_KEY));
     }
 
-    public function test_invalid_url_is_rejected(): void
+    public function test_relative_path_without_leading_slash_is_accepted(): void
     {
         $response = $this->actingAs($this->admin, 'member')->patch($this->updateUrl, [
-            'cookie_consent_privacy_url' => 'not a url',
+            'cookie_consent_privacy_url' => 'legal/privacy-policy',
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        $this->assertSame('legal/privacy-policy', DixlaseCookieSetting::getValue(InjectCookieConsentBanner::PRIVACY_URL_SETTING_KEY));
+    }
+
+    public function test_dangerous_scheme_is_rejected(): void
+    {
+        $response = $this->actingAs($this->admin, 'member')->patch($this->updateUrl, [
+            'cookie_consent_privacy_url' => 'javascript:alert(1)',
         ]);
 
         $response->assertSessionHasErrors('cookie_consent_privacy_url');
