@@ -31,6 +31,8 @@
  */
 
 return [
+    'heading' => 'Cookie 管理設定',
+
     'banner_heading' => '同意バナー',
     'enabled_label' => 'Cookie 同意バナーを表示する',
     'enabled_help' => 'ON にすると、まだ選択していない訪問者にバナーを表示します。「Cookie 設定」トリガーから、誰でもいつでも同意の変更・撤回ができます。',
@@ -41,8 +43,8 @@ return [
 
     'links_heading' => 'ポリシーリンク',
     'links_help' => 'バナーに表示する任意のリンクです。絶対 URL（https://…）またはサイト相対パス（/privacy）を入力してください。空欄にするとリンクを表示しません。',
-    'privacy_url_label' => 'プライバシーポリシー URL',
-    'cookie_url_label' => 'クッキーポリシー URL',
+    'privacy_url_label' => 'プライバシーポリシー',
+    'cookie_url_label' => 'クッキーポリシー',
     'url_invalid' => '有効な URL、または「/」で始まるパスを入力してください。',
 
     'version_heading' => '全訪問者に再同意を求める',

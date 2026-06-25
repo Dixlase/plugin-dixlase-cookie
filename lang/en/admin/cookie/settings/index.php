@@ -31,6 +31,8 @@
  */
 
 return [
+    'heading' => 'Cookie Management Settings',
+
     'banner_heading' => 'Consent banner',
     'enabled_label' => 'Show the cookie consent banner',
     'enabled_help' => 'When on, the banner is shown to visitors who have not made a choice, and a "Cookie settings" trigger lets anyone change or withdraw consent at any time.',
@@ -41,8 +43,8 @@ return [
 
     'links_heading' => 'Policy links',
     'links_help' => 'Optional links shown in the banner. Enter an absolute URL (https://…) or a site-relative path (/privacy). Leave blank to hide a link.',
-    'privacy_url_label' => 'Privacy policy URL',
-    'cookie_url_label' => 'Cookie policy URL',
+    'privacy_url_label' => 'Privacy Policy',
+    'cookie_url_label' => 'Cookie Policy',
     'url_invalid' => 'Enter a valid URL or a path beginning with "/".',
 
     'version_heading' => 'Re-prompt all visitors',

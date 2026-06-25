@@ -152,9 +152,10 @@ class CookieConsentBannerTest extends TestCase
         $response->assertSee('data-cookie-consent', false);
         $response->assertSee('data-autoopen="0"', false);
         $response->assertSee('data-cookie-consent-trigger', false);
-        // Toggles are pre-filled from the visitor's current decision.
-        $response->assertSee('analytics: true', false);
-        $response->assertSee('marketing: false', false);
+        // Toggles are pre-filled from the visitor's current decision
+        // (strings '1'/'0' to match the core x-form-toggle xModel contract).
+        $response->assertSee("analytics: '1'", false);
+        $response->assertSee("marketing: '0'", false);
     }
 
     public function test_policy_links_render_when_url_settings_are_present(): void
