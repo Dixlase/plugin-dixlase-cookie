@@ -1,0 +1,89 @@
+name: Test
+
+on:
+  push:
+  pull_request:
+    branches:
+      - main
+
+# GitHub OAuth token for composer to clone the private
+# `dixlase/dixlase-onepage` dependency referenced by Core's
+# composer.json. The PAT lives in the organization secret
+# `COMPOSER_AUTH` with Contents:Read scoped to that repo only.
+env:
+  COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: PHPUnit Tests
+
+    steps:
+      - name: Checkout plugin
+        uses: actions/checkout@v4
+        with:
+          path: plugin
+
+      - name: Checkout core
+        uses: actions/checkout@v4
+        with:
+          repository: Dixlase/dixlase-core
+          ref: main
+          token: ${{ secrets.CORE_REPO_TOKEN }}
+          path: core
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: sodium, mbstring, json, sqlite3, pdo_sqlite, gd
+          coverage: none
+
+      - name: Place plugin into core directory
+        run: |
+          # Core no longer tracks `plugins/` as a populated tree (plugins
+          # are installed via composer in production), so `core/plugins/`
+          # does not exist after `actions/checkout` of core. Create the
+          # parent dir explicitly, then remove any stale path before
+          # moving the freshly-checked-out plugin into place.
+          mkdir -p core/plugins
+          rm -rf core/plugins/DixlaseCookie
+          mv plugin core/plugins/DixlaseCookie
+
+      - name: Cache composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: core/vendor
+          key: ${{ runner.os }}-php83-composer-${{ hashFiles('core/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php83-composer-
+
+      - name: Install core composer dependencies
+        working-directory: core
+        run: composer install --no-interaction --prefer-dist --no-progress --no-scripts
+
+      - name: Sync plugin autoload mappings
+        working-directory: core
+        run: |
+          # composer.local.json を生成（プラグインの psr-4 マッピングを集約）
+          # 通常は pre-autoload-dump フックで実行されるが --no-scripts のため明示実行
+          php scripts/sync-local-autoload.php
+          composer dump-autoload --no-scripts --optimize
+
+      - name: Setup test environment
+        working-directory: core
+        env:
+          APP_KEY: base64:INAsYduzvVFuYXTFeMS0EkLXHynFalWYt/O9hUlTdfg=
+        run: |
+          if [ -f .env.example ]; then
+            cp .env.example .env
+          else
+            touch .env
+          fi
+          echo "APP_KEY=${APP_KEY}" >> .env
+
+      - name: Run PHPUnit tests
+        working-directory: core/plugins/DixlaseCookie
+        env:
+          APP_KEY: base64:INAsYduzvVFuYXTFeMS0EkLXHynFalWYt/O9hUlTdfg=
+        run: ../../vendor/bin/phpunit

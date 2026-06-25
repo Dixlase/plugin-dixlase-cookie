@@ -1,0 +1,105 @@
+name: Deploy Plugin
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set deploy target
+        id: target
+        run: |
+          if [ "${{ github.repository }}" = "Dixlase/plugin-dixlase-cookie" ]; then
+            echo "env=production" >> $GITHUB_OUTPUT
+            echo "base_dir=/srv/dixlase" >> $GITHUB_OUTPUT
+          else
+            echo "env=staging" >> $GITHUB_OUTPUT
+            echo "base_dir=/srv/dixlase/staging" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Deploy plugin via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            set -e
+            BASE="${{ steps.target.outputs.base_dir }}"
+            PLUGIN_DIR="DixlaseCookie"
+            EXPECTED_URL="git@github.com:${{ github.repository }}.git"
+
+            for SITE in brand demo; do
+              DEST="$BASE/$SITE/plugins/$PLUGIN_DIR"
+              CONTAINER_DEST="/var/www/apps/$SITE/plugins/$PLUGIN_DIR"
+              echo "=== Deploying plugin $PLUGIN_DIR to $SITE (${{ steps.target.outputs.env }}) ==="
+
+              # ------------------------------------------------------------------
+              # Resolve $DEST into one of three shapes and act accordingly:
+              #
+              #   (a) Proper nested clone of this plugin
+              #       -> restore ownership, fetch + reset to origin/main
+              #
+              #   (b) Directory exists but with no nested .git
+              #       -> likely the outer parent repo was re-cloned over it and
+              #          the plugin's git metadata was lost. Without this guard
+              #          the next branch would silently fetch+reset against
+              #          WHICHEVER repo the parent .git tracks (Core, usually),
+              #          leaving plugin files frozen forever -- exactly the bug
+              #          that hid in DixlaseInquiry from 2026-05-13 to 2026-05-17.
+              #          Move the stale tree aside (recoverable as .stale.<ts>)
+              #          and re-clone from $EXPECTED_URL.
+              #
+              #   (c) Directory does not exist at all
+              #       -> first-time deploy, clone fresh.
+              #
+              # Any other anomaly (.git exists but its origin URL points at a
+              # different repo) is treated as operator intent we shouldn't
+              # second-guess: fail loud so manual recovery is forced.
+              # ------------------------------------------------------------------
+              if [ -d "$DEST/.git" ]; then
+                ACTUAL_URL=$(cd "$DEST" && git config --get remote.origin.url || echo "")
+                if [ "$ACTUAL_URL" != "$EXPECTED_URL" ]; then
+                  echo "ERROR: $DEST/.git origin URL does not match this plugin." >&2
+                  echo "       Expected: $EXPECTED_URL" >&2
+                  echo "       Actual:   $ACTUAL_URL" >&2
+                  echo "       Refusing to fetch+reset against an unrelated repo." >&2
+                  echo "       Manual recovery (one-time):" >&2
+                  echo "         sudo mv $DEST ${DEST}.stale.\$(date +%Y%m%d-%H%M%S)" >&2
+                  echo "         git clone --branch main $EXPECTED_URL $DEST" >&2
+                  exit 1
+                fi
+
+                docker exec compose-php-1 chown -R 1001:1001 "$CONTAINER_DEST"
+                cd "$DEST"
+                git fetch origin
+                git reset --hard origin/main
+
+              elif [ -d "$DEST" ]; then
+                BACKUP_BASENAME="${PLUGIN_DIR}.stale.$(date +%Y%m%d-%H%M%S)"
+                echo "WARNING: $DEST exists but has no nested .git; moving aside to plugins/$BACKUP_BASENAME and re-cloning fresh."
+                docker exec compose-php-1 mv "$CONTAINER_DEST" "/var/www/apps/$SITE/plugins/$BACKUP_BASENAME"
+                git clone --branch main "$EXPECTED_URL" "$DEST"
+                docker exec compose-php-1 chown -R 1001:1001 "$CONTAINER_DEST"
+
+              else
+                git clone --branch main "$EXPECTED_URL" "$DEST"
+                docker exec compose-php-1 chown -R 1001:1001 "$CONTAINER_DEST"
+              fi
+
+              if [ -f "$DEST/composer.json" ]; then
+                docker exec compose-php-1 bash -c "cd /var/www/apps/$SITE && composer dump-autoload --no-dev --optimize"
+              fi
+
+              # Invalidate Laravel's compiled bootstrap caches (views, config,
+              # routes, events) so blade / config / route changes shipped by
+              # this push take effect on the next request without waiting for
+              # OPcache revalidation or a PHP-FPM reload.
+              docker exec compose-php-1 php /var/www/apps/$SITE/artisan optimize:clear
+            done
+
+            echo "=== Plugin deploy complete ==="
