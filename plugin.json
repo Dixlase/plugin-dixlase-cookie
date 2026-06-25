@@ -6,8 +6,8 @@
     "slug": "dixlase-cookie",
     "version": "1.0.0",
     "description": {
-        "en": "This is the DixlaseCookie plugin.",
-        "ja": "DixlaseCookieのプラグインです。"
+        "en": "GDPR-ready cookie consent for Dixlase. Shows a per-category consent banner (necessary / functional / analytics / marketing) with accept-all, reject-all and save-selection, plus a persistent \"Cookie\" trigger to re-open and withdraw consent at any time. Stores one compact row per visitor and implements the Core ConsentStateProvider contract so other plugins (e.g. SEO/Google Analytics) can gate trackers on consent. Admin screen to enable the banner, set the cookie lifetime, add privacy/cookie policy links, and bump the consent version to re-prompt everyone. Free / GPL.",
+        "ja": "Dixlase 向けの GDPR 対応クッキー同意プラグイン。カテゴリ別（必須 / 機能 / 分析 / マーケティング）の同意バナーを表示し、すべて許可・すべて拒否・選択を保存に対応。常設の「Cookie」トリガーからいつでも再オープンして同意を撤回できます。訪問者ごとにコンパクトな 1 行で保存し、コアの ConsentStateProvider 契約を実装するため、他プラグイン（SEO / Google アナリティクス等）が同意状態に応じてトラッカーを制御できます。管理画面でバナーの有効化・Cookie 寿命・プライバシー / クッキーポリシーのリンク設定・全員への再同意要求（バージョン更新）が可能。無料 / GPL。"
     },
     "author": "exc-D inc.",
     "author_id": "exc-d-inc",
@@ -41,16 +41,16 @@
         "php": ">=8.2"
     },
     "provides": {
-        "admin_menu": false,
-        "front_routes": false,
+        "admin_menu": true,
+        "front_routes": true,
         "api_routes": false,
-        "settings_page": false,
+        "settings_page": true,
         "shortcodes": false,
         "helper_functions": false
     },
     "permissions": {
         "database": {
-            "own_tables": false,
+            "own_tables": true,
             "core_tables": []
         },
         "storage": {
@@ -78,22 +78,22 @@
         },
         "system": {
             "register_shortcodes": false,
-            "register_middleware": false,
-            "register_commands": false,
+            "register_middleware": true,
+            "register_commands": true,
             "register_blade_directives": false,
             "modify_routes": false
         },
         "_optional": [],
         "_notes": {
-            "ja": "",
-            "en": ""
+            "ja": "独自テーブル plg_dixlase_cookie_consents（訪問者ごとの同意状態を 1 行で保持）と plg_dixlase_cookie_settings（バナー設定）を使用（database.own_tables）。同意バナーをフロントの HTML レスポンスに注入するため InjectCookieConsentBanner ミドルウェアを web グループに登録（system.register_middleware）。古いポリシーバージョンの放棄行を整理する artisan コマンド dls:cookie:prune を登録（system.register_commands）。コアの App\\Contracts\\Cookie\\ConsentStateProviderInterface を実装し、他プラグインが同意状態を参照できるようにする。",
+            "en": "Uses own tables plg_dixlase_cookie_consents (one row per visitor holding current consent state) and plg_dixlase_cookie_settings (banner settings) (database.own_tables). Registers the InjectCookieConsentBanner middleware on the web group to inject the consent banner into front-end HTML responses (system.register_middleware). Registers the artisan command dls:cookie:prune to prune abandoned out-of-date rows (system.register_commands). Implements Core's App\\Contracts\\Cookie\\ConsentStateProviderInterface so other plugins can read consent state."
         }
     },
     "declares": {
         "configs": {
-            "roles": false,
+            "roles": true,
             "database_cleanup": false,
-            "navigation": false
+            "navigation": true
         },
         "assets": {
             "common": [],
@@ -101,9 +101,9 @@
             "front": []
         },
         "contracts": [],
-        "migrations": false,
-        "commands": false,
-        "middleware": false
+        "migrations": true,
+        "commands": true,
+        "middleware": true
     },
     "files": {},
     "signing": {
