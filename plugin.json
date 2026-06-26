@@ -6,8 +6,8 @@
     "slug": "dixlase-cookie",
     "version": "1.0.0",
     "description": {
-        "en": "GDPR-ready cookie consent for Dixlase. Shows a per-category consent banner (necessary / functional / analytics / marketing) with accept-all, reject-all and save-selection, plus a persistent \"Cookie\" trigger to re-open and withdraw consent at any time. Stores one compact row per visitor and implements the Core ConsentStateProvider contract so other plugins (e.g. SEO/Google Analytics) can gate trackers on consent. Admin screen to enable the banner, set the cookie lifetime, add privacy/cookie policy links, and bump the consent version to re-prompt everyone. Free / GPL.",
-        "ja": "Dixlase 向けの GDPR 対応クッキー同意プラグイン。カテゴリ別（必須 / 機能 / 分析 / マーケティング）の同意バナーを表示し、すべて許可・すべて拒否・選択を保存に対応。常設の「Cookie」トリガーからいつでも再オープンして同意を撤回できます。訪問者ごとにコンパクトな 1 行で保存し、コアの ConsentStateProvider 契約を実装するため、他プラグイン（SEO / Google アナリティクス等）が同意状態に応じてトラッカーを制御できます。管理画面でバナーの有効化・Cookie 寿命・プライバシー / クッキーポリシーのリンク設定・全員への再同意要求（バージョン更新）が可能。無料 / GPL。"
+        "en": "GDPR-ready cookie consent. Shows a per-category consent banner (necessary / functional / analytics / marketing) with a re-openable \"Cookie\" panel to withdraw anytime. Implements the Core ConsentStateProvider contract so other plugins (e.g. SEO/Google Analytics) can gate trackers on consent. Free / GPL.",
+        "ja": "GDPR 対応のクッキー同意プラグイン。カテゴリ別（必須 / 機能 / 分析 / マーケティング）の同意バナーと、いつでも撤回できる「Cookie」設定を提供します。コアの ConsentStateProvider 契約を実装するため、他プラグイン（SEO / Google アナリティクス等）が同意状態に応じてトラッカーを制御できます。無料 / GPL。"
     },
     "author": "exc-D inc.",
     "author_id": "exc-d-inc",
