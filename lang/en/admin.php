@@ -33,6 +33,6 @@
 return [
     'plugin' => [
         'name' => 'DixlaseCookie',
-        'description' => 'This is the DixlaseCookie plugin.',
+        'description' => 'GDPR-ready cookie consent for Dixlase. Shows a per-category consent banner (necessary / functional / analytics / marketing) with accept-all, reject-all and save-selection, plus a persistent "Cookie" trigger to re-open and withdraw consent at any time. Stores one compact row per visitor and implements the Core ConsentStateProvider contract so other plugins (e.g. SEO/Google Analytics) can gate trackers on consent. Admin screen to enable the banner, set the cookie lifetime, add privacy/cookie policy links, and bump the consent version to re-prompt everyone. Free / GPL.',
     ],
 ];
