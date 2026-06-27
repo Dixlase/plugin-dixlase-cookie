@@ -106,14 +106,19 @@ class CookieConsentController extends Controller
             $this->currentLifetimeDays() * 24 * 60,
         );
 
-        // Expose the consent UUID out-of-band on the request so an audit
-        // listener can persist it alongside its row. The
-        // ConsentChanged payload itself stays a plain serialisable pair of
-        // arrays for the Wasm / Capability Broker boundary, so the id is
-        // not part of the event contract; consumers that do not care
-        // simply ignore the attribute. This is a one-way hint — we never
-        // depend on anyone reading it.
-        $request->attributes->set('dixlase_cookie.consent_id', $consentId);
+        // Expose the consent UUID out-of-band so a synchronous audit
+        // listener can persist it alongside its row. The ConsentChanged
+        // payload itself stays a plain serialisable pair of arrays for the
+        // Wasm / Capability Broker boundary, so the id is not part of the
+        // event contract; consumers that do not care simply ignore the
+        // attribute. This is a one-way hint — we never depend on it.
+        //
+        // Set it on the CONTAINER request (app('request')), NOT on the
+        // injected $request: $request is a FormRequest, which Laravel builds
+        // via Request::createFrom() with its own copied attribute bag. A
+        // listener reading app('request') would never see an attribute set
+        // on that separate instance, leaving consent_id NULL downstream.
+        app('request')->attributes->set('dixlase_cookie.consent_id', $consentId);
 
         // The row is always appended (full audit log), but ConsentChanged
         // fires only when the effective decision actually changed — true
