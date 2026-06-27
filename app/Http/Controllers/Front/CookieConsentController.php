@@ -106,6 +106,15 @@ class CookieConsentController extends Controller
             $this->currentLifetimeDays() * 24 * 60,
         );
 
+        // Expose the consent UUID out-of-band on the request so an audit
+        // listener (DixlaseLegal) can persist it alongside its row. The
+        // ConsentChanged payload itself stays a plain serialisable pair of
+        // arrays for the Wasm / Capability Broker boundary, so the id is
+        // not part of the event contract; consumers that do not care
+        // simply ignore the attribute. This is a one-way hint — we never
+        // depend on anyone reading it.
+        $request->attributes->set('dixlase_cookie.consent_id', $consentId);
+
         // The row is always appended (full audit log), but ConsentChanged
         // fires only when the effective decision actually changed — true
         // to the event's name. A first-time decision (previous === []) is
