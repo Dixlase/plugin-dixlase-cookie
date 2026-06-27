@@ -42,7 +42,7 @@ return [
     'lifetime_help' => 'How long the visitor\'s choice is remembered before they are asked again. 1–:max days (default 365).',
 
     'links_heading' => 'Policy links',
-    'links_help' => 'Optional links shown in the banner. Enter an absolute http(s) URL or a path (e.g. /privacy or legal/privacy-policy). Leave blank to hide a link.',
+    'links_help' => 'Optional links shown in the banner. Enter an absolute http(s) URL or a path (e.g. /privacy or /page/privacy-policy). Leave blank to hide a link.',
     'privacy_url_label' => 'Privacy Policy',
     'cookie_url_label' => 'Cookie Policy',
     'url_invalid' => 'Enter an absolute http(s) URL or a path. Schemes such as javascript: are not allowed.',

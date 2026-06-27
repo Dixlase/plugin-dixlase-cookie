@@ -37,11 +37,10 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * Plugin-private settings store for DixlaseCookie.
  *
- * Mirrors the DixlaseLegal\DixlaseLegalSetting pattern: a thin
- * key/value model with static `getValue()` / `setValue()` accessors
- * the admin controllers (B-5) and the persistent-cookie reader
- * (B-3) consume. Keeps settings inside this plugin's own table so
- * Core's site_settings table stays uncluttered.
+ * A thin key/value model with static `getValue()` / `setValue()`
+ * accessors the admin controllers (B-5) and the persistent-cookie
+ * reader (B-3) consume. Keeps settings inside this plugin's own table
+ * so Core's site_settings table stays uncluttered.
  *
  * @property int $id
  * @property string $name

@@ -69,7 +69,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </div>
             </div>
 
-            {{-- Optional policy links (URL input pattern, no Legal dependency) --}}
+            {{-- Optional policy links (URL input pattern, no cross-plugin dependency) --}}
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                     {{ __('dixlase-cookie::admin/cookie/settings/index.links_heading') }}

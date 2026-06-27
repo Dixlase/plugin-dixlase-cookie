@@ -50,8 +50,8 @@ use Plugins\DixlaseCookie\App\Services\CookieConsentStateProvider;
  * Owns the operator-facing knobs: enable the banner, set the persistent
  * cookie lifetime, paste optional privacy / cookie policy URLs, and bump
  * the consent version to re-prompt every visitor. Audit-log viewing is
- * intentionally absent — that is DixlaseLegal's (paid) responsibility per
- * the free/paid split.
+ * intentionally absent — that is a separate (paid) plugin's
+ * responsibility per the free/paid split.
  */
 class CookieAdminController extends Controller
 {

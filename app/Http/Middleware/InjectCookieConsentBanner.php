@@ -181,8 +181,8 @@ class InjectCookieConsentBanner
     /**
      * Build the optional policy links from operator-supplied URL
      * settings. Each link is included only when its URL is non-empty,
-     * keeping the banner free of any dependency on DixlaseLegal /
-     * DixlasePages (operators paste plain URLs in the admin screen).
+     * keeping the banner free of any dependency on other plugins
+     * (operators paste plain URLs in the admin screen).
      *
      * @return list<array{url: string, label: string}>
      */
