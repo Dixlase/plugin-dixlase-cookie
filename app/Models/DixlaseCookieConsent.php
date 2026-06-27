@@ -43,16 +43,15 @@ use Illuminate\Database\Eloquent\Model;
  * The shape is intentionally minimal (see the migration's class
  * docblock): consent_id, categories JSON, policy_version,
  * consented_at. Audit-quality metadata (IP, User-Agent, session id)
- * is NOT recorded here on purpose — that responsibility belongs on
- * DixlaseLegal's audit table per the free/paid split documented in
- * `.backlog/dixlase-legal-cookie-split-strategy.md`.
+ * is NOT recorded here on purpose — that responsibility belongs on a
+ * separate audit plugin's table per the free/paid split.
  *
  * `consent_id` is UNIQUE: each visitor decision (accept, withdraw,
  * change a category) UPDATES that single row in place rather than
  * appending, so the table holds only current state and does not grow
  * per action. Change history is not kept here — the audit trail lives
- * in DixlaseLegal's table, fed by the ConsentChanged event. Reading
- * code resolves a visitor with `forConsentId($id)->first()`.
+ * in a separate audit plugin's table, fed by the ConsentChanged event.
+ * Reading code resolves a visitor with `forConsentId($id)->first()`.
  *
  * @property int $id
  * @property string $consent_id

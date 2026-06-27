@@ -41,8 +41,8 @@
 */
 
 return [
-    // Independent "Cookie" section (kept separate from DixlaseLegal so the
-    // plugin stands on its own with no Legal dependency).
+    // Independent "Cookie" section: its own top-level section so the
+    // plugin stands on its own with no dependency on other plugins.
     'cookie' => [
         '_insert_after' => 'front',
         'text' => 'dixlase-cookie::admin/navigation.cookie.text',

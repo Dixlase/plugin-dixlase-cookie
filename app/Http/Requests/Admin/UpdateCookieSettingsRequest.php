@@ -40,9 +40,9 @@ use Plugins\DixlaseCookie\App\Http\Controllers\Admin\CookieAdminController;
  * Validates the cookie-consent admin settings form.
  *
  * The two policy-link fields accept either an absolute URL or a
- * site-relative path (leading "/"), mirroring DixlaseInquiry's
- * privacy_policy_url pattern so operators can paste a Dixlase page path
- * without DixlaseCookie depending on DixlaseLegal / DixlasePages.
+ * site-relative path (leading "/"), so operators can paste a Dixlase
+ * page path without DixlaseCookie depending on any page-providing
+ * plugin.
  */
 class UpdateCookieSettingsRequest extends FormRequest
 {
@@ -76,7 +76,7 @@ class UpdateCookieSettingsRequest extends FormRequest
     /**
      * A permissive link rule: accepts an empty value, an absolute http(s)
      * URL, or any site path (with or without a leading slash, e.g.
-     * "/privacy" or "legal/privacy-policy"). It rejects only other URI
+     * "/privacy" or "page/privacy-policy"). It rejects only other URI
      * schemes (javascript:, data:, mailto:, …) so the value stays safe to
      * render as an href.
      */

@@ -42,7 +42,7 @@ return [
     'lifetime_help' => '訪問者の選択を記憶し、再度確認するまでの期間です。1〜:max 日（デフォルト 365）。',
 
     'links_heading' => 'ポリシーリンク',
-    'links_help' => 'バナーに表示する任意のリンクです。絶対 URL（http/https）またはパス（例: /privacy、legal/privacy-policy）を入力してください。空欄にするとリンクを表示しません。',
+    'links_help' => 'バナーに表示する任意のリンクです。絶対 URL（http/https）またはパス（例: /privacy、/page/privacy-policy）を入力してください。空欄にするとリンクを表示しません。',
     'privacy_url_label' => 'プライバシーポリシー',
     'cookie_url_label' => 'クッキーポリシー',
     'url_invalid' => '絶対 URL（http/https）またはパスを入力してください。javascript: などのスキームは使用できません。',

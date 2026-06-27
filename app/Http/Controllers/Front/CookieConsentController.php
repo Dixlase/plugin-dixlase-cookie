@@ -53,9 +53,9 @@ use Plugins\DixlaseCookie\App\Services\CookieConsentStateProvider;
  * cookie; the same UUID is reused across actions so withdrawals and
  * re-consents stay grouped under one history.
  *
- * Mirrors DixlaseLegal's accept controller but with the minimal,
- * privacy-first field set (no IP / UA / session id) and per-category
- * granularity instead of a single accept-all flag.
+ * Uses a deliberately minimal, privacy-first field set (no IP / UA /
+ * session id) with per-category granularity instead of a single
+ * accept-all flag.
  */
 class CookieConsentController extends Controller
 {
@@ -88,9 +88,9 @@ class CookieConsentController extends Controller
         $current = $request->consentedCategories();
 
         // Upsert by consent_id: one row per visitor, updated in place.
-        // The full change history is captured separately by DixlaseLegal's
-        // audit listener on the ConsentChanged event, so this table only
-        // ever holds the visitor's current decision.
+        // The full change history is captured separately by any audit
+        // listener on the ConsentChanged event, so this table only ever
+        // holds the visitor's current decision.
         DixlaseCookieConsent::updateOrCreate(
             ['consent_id' => $consentId],
             [
@@ -107,7 +107,7 @@ class CookieConsentController extends Controller
         );
 
         // Expose the consent UUID out-of-band on the request so an audit
-        // listener (DixlaseLegal) can persist it alongside its row. The
+        // listener can persist it alongside its row. The
         // ConsentChanged payload itself stays a plain serialisable pair of
         // arrays for the Wasm / Capability Broker boundary, so the id is
         // not part of the event contract; consumers that do not care
