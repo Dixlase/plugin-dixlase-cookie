@@ -16,11 +16,13 @@ GDPR-ready cookie consent for Dixlase: a per-category consent banner with a re-o
 
 ## Installation
 
-Open the admin panel under **Dashboard → Plugins**, find this plugin, then download and enable it. The plugin's tables are created automatically on enable.
+Open the admin panel under **Dashboard → Plugins**, find this plugin, then download and enable it.  
+The plugin's tables are created automatically on enable.
 
 ## Usage
 
-Once enabled, **Cookie** appears in the admin sidebar with a **Cookie Management Settings** screen. Turn the banner on, set the cookie lifetime, add policy links, or use **Ask everyone to re-consent** to re-prompt all visitors after a policy change.
+Once enabled, **Cookie** appears in the admin sidebar with a **Cookie Management Settings** screen.  
+Turn the banner on, set the cookie lifetime, add policy links, or use **Ask everyone to re-consent** to re-prompt all visitors after a policy change.
 
 ## License
 
