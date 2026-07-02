@@ -26,11 +26,31 @@
 
 ファイル構成:
 
-    LICENSE                GNU General Public License v3 原文
-    LICENSE-COMMERCIAL     商用ライセンス条項(別途契約)
-    LICENSE-COMMERCIAL.ja  LICENSE-COMMERCIAL の日本語版
-    NOTICE                 プロジェクト著作権とデュアルライセンス概要
-                           (英語版)
-    NOTICE.ja              本ファイル(日本語版)
+    LICENSE                  GNU General Public License v3 原文
+    LICENSE-COMMERCIAL       商用ライセンス条項(別途契約)
+    LICENSE-COMMERCIAL.ja    LICENSE-COMMERCIAL の日本語版
+    NOTICE                   プロジェクト著作権とデュアルライセンス概要
+                             (英語版)
+    NOTICE.ja                本ファイル(日本語版)
+    COPYRIGHT-POLICY.md      プラグイン側の著作権方針(正本は Core
+                             リポジトリのポリシーを参照)
+    COPYRIGHT-POLICY.ja.md   その日本語版
+    CONTRIBUTING.md          本プラグインの現行コントリビューション方針
+    CONTRIBUTING.ja.md       その日本語版
+    SECURITY.md              脆弱性報告(Core への案内)
+    SECURITY.ja.md           その日本語版
+    README.md                概要と使い方(英語版)
+    README.ja.md             その日本語版
+
+Dixlase Core リポジトリから参照される文書:
+
+    LICENSE-EXCEPTIONS       AGPL §7 に基づくプラグイン・テーマ例外。
+                             本プラグインが AGPL のコアと共存しても
+                             AGPL 義務を継承しないようにするもの
+    CLA.md                   コントリビューターライセンス契約の正本
+                             (個人・法人の署名能力の唯一の出典)— 準備中
+    TRADEMARK-POLICY.md      商標利用ポリシー
+    PLUGIN-API.md            プラグイン・テーマ例外が参照する
+                             プラグイン API 境界
 
 =======================================================================

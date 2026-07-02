@@ -26,11 +26,32 @@
 
 File map:
 
-    LICENSE                GNU General Public License v3 (verbatim)
-    LICENSE-COMMERCIAL     Commercial license terms (separate agreement)
-    LICENSE-COMMERCIAL.ja  Japanese counterpart of LICENSE-COMMERCIAL
-    NOTICE                 This file — project copyright and dual-license
-                           summary (English)
-    NOTICE.ja              Japanese counterpart of this file
+    LICENSE                  GNU General Public License v3 (verbatim)
+    LICENSE-COMMERCIAL       Commercial license terms (separate agreement)
+    LICENSE-COMMERCIAL.ja    Japanese counterpart of LICENSE-COMMERCIAL
+    NOTICE                   This file — project copyright and dual-license
+                             summary (English)
+    NOTICE.ja                Japanese counterpart of this file
+    COPYRIGHT-POLICY.md      Plugin-side copyright stance (references the
+                             canonical policy in the Core repository)
+    COPYRIGHT-POLICY.ja.md   Japanese counterpart
+    CONTRIBUTING.md          Current contribution policy for this plugin
+    CONTRIBUTING.ja.md       Japanese counterpart
+    SECURITY.md              Vulnerability reporting (pointer to Core)
+    SECURITY.ja.md           Japanese counterpart
+    README.md                Overview and usage (English)
+    README.ja.md             Japanese counterpart
+
+Documents referenced from the Dixlase Core repository:
+
+    LICENSE-EXCEPTIONS       Plugin and Theme Exception under AGPL §7
+                             that lets this plugin sit alongside the AGPL
+                             core without inheriting AGPL obligations
+    CLA.md                   Canonical Contributor License Agreement
+                             (single source for individual and entity
+                             signing capacity) — in preparation
+    TRADEMARK-POLICY.md      Trademark usage policy
+    PLUGIN-API.md            Plugin API boundary referenced by the
+                             Plugin and Theme Exception
 
 =======================================================================
