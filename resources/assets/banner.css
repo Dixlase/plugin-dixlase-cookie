@@ -1,0 +1,259 @@
+/*
+ * This file is part of DixlaseCookie.
+ *
+ * Copyright (C) 2026 exc-D inc. <https://exc-d.com>
+ *
+ * DixlaseCookie is dual-licensed (GPL-3.0-or-later or commercial).
+ * See LICENSE / LICENSE-COMMERCIAL.
+ *
+ * Self-contained styles for the cookie consent banner + trigger. Uses
+ * only this plugin's own `dxlc-*` classes so the banner renders correctly
+ * regardless of the host theme (no dependency on the theme's Tailwind
+ * build). Dark mode follows the project's class-based strategy: a `.dark`
+ * ancestor (typically <html>) activates the dark variants.
+ */
+
+/* Hide Alpine-cloaked elements until Alpine initializes (no theme needed). */
+[x-cloak] { display: none !important; }
+
+/* ---- Design tokens -------------------------------------------------- */
+.dxlc {
+    --dxlc-accent: #2563eb;          /* blue-600 */
+    --dxlc-accent-hover: #3b82f6;    /* blue-500 */
+    --dxlc-accent-active: #1d4ed8;   /* blue-700 */
+    --dxlc-bg: rgba(255, 255, 255, 0.72);
+    --dxlc-trigger-bg: rgba(255, 255, 255, 0.82);
+    --dxlc-fg: #111827;              /* gray-900 */
+    --dxlc-muted: #374151;           /* gray-700 */
+    --dxlc-subtle: #6b7280;          /* gray-500 */
+    --dxlc-border: #e5e7eb;          /* gray-200 */
+    --dxlc-track: #9ca3af;           /* gray-400 */
+    --dxlc-surface: #ffffff;
+    --dxlc-hover: #f3f4f6;           /* gray-100 */
+    --dxlc-badge-bg: #e5e7eb;
+    --dxlc-badge-fg: #4b5563;        /* gray-600 */
+    font-family: inherit;
+}
+
+.dark .dxlc {
+    --dxlc-bg: rgba(17, 24, 39, 0.62);
+    --dxlc-trigger-bg: rgba(17, 24, 39, 0.72);
+    --dxlc-fg: #f3f4f6;
+    --dxlc-muted: #d1d5db;
+    --dxlc-subtle: #9ca3af;
+    --dxlc-border: #374151;          /* gray-700 */
+    --dxlc-track: #4b5563;
+    --dxlc-surface: #1f2937;         /* gray-800 */
+    --dxlc-hover: #1f2937;
+    --dxlc-badge-bg: #374151;
+    --dxlc-badge-fg: #d1d5db;
+    --dxlc-accent: #3b82f6;
+    --dxlc-accent-hover: #60a5fa;
+}
+
+.dxlc *,
+.dxlc *::before,
+.dxlc *::after { box-sizing: border-box; }
+
+.dxlc-icon { width: 1rem; height: 1rem; display: block; flex-shrink: 0; }
+
+/* ---- Re-open trigger (bottom-left pill) ----------------------------- */
+.dxlc-trigger {
+    position: fixed;
+    bottom: 1rem;
+    left: 1rem;
+    z-index: 40;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 9999px;
+    border: 1px solid var(--dxlc-border);
+    background: var(--dxlc-trigger-bg);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    color: var(--dxlc-muted);
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+.dxlc-trigger:hover { background: var(--dxlc-surface); }
+.dxlc-trigger:focus-visible { outline: 2px solid var(--dxlc-accent); outline-offset: 2px; }
+
+/* ---- Panel + card --------------------------------------------------- */
+.dxlc-panel {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    padding: 1rem;
+}
+
+.dxlc-card {
+    position: relative;
+    max-width: 48rem;             /* max-w-3xl */
+    margin-left: auto;
+    margin-right: auto;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--dxlc-border);
+    background: var(--dxlc-bg);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    color: var(--dxlc-fg);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+@media (min-width: 640px) { .dxlc-card { padding: 1.5rem; } }
+
+/* ---- Close button --------------------------------------------------- */
+.dxlc-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border: 0;
+    border-radius: 0.375rem;
+    background: transparent;
+    color: var(--dxlc-subtle);
+    cursor: pointer;
+}
+.dxlc-close:hover { background: var(--dxlc-hover); color: var(--dxlc-fg); }
+.dxlc-close:focus-visible { outline: 2px solid var(--dxlc-accent); outline-offset: 2px; }
+.dxlc-close .dxlc-icon { width: 1.25rem; height: 1.25rem; }
+
+/* ---- Header --------------------------------------------------------- */
+.dxlc-head { display: flex; flex-direction: column; gap: 0.5rem; padding-right: 2rem; }
+.dxlc-title { margin: 0; font-size: 1rem; font-weight: 600; color: var(--dxlc-fg); }
+.dxlc-message { margin: 0; font-size: 0.875rem; line-height: 1.4; color: var(--dxlc-muted); }
+.dxlc-links { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.75rem; font-size: 0.75rem; }
+.dxlc-link { color: var(--dxlc-accent); text-decoration: none; }
+.dxlc-link:hover { text-decoration: underline; }
+.dxlc-sep { color: var(--dxlc-subtle); }
+
+/* ---- Category grid + toggles --------------------------------------- */
+.dxlc-cats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 1rem;
+    row-gap: 0.25rem;
+}
+@media (min-width: 768px) { .dxlc-cats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+.dxlc-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: var(--dxlc-fg);
+    -webkit-user-select: none;
+    user-select: none;
+}
+.dxlc-toggle--disabled { cursor: default; }
+
+/* Visually-hidden real checkbox (keeps it accessible + focusable). */
+.dxlc-toggle-input {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0);
+    white-space: nowrap; border: 0;
+}
+
+.dxlc-toggle-track {
+    position: relative;
+    flex-shrink: 0;
+    width: 2.25rem;   /* 36px */
+    height: 1.25rem;  /* 20px */
+    border-radius: 9999px;
+    background: var(--dxlc-track);
+    transition: background-color 0.15s ease;
+}
+.dxlc-toggle-thumb {
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 1rem; height: 1rem;
+    border-radius: 9999px;
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    transition: transform 0.15s ease;
+}
+.dxlc-toggle-input:checked + .dxlc-toggle-track { background: var(--dxlc-accent); }
+.dxlc-toggle-input:checked + .dxlc-toggle-track .dxlc-toggle-thumb { transform: translateX(1rem); }
+.dxlc-toggle-input:focus-visible + .dxlc-toggle-track { outline: 2px solid var(--dxlc-accent); outline-offset: 2px; }
+.dxlc-toggle-input:disabled + .dxlc-toggle-track { opacity: 0.6; }
+
+.dxlc-toggle-label { font-weight: 500; }
+
+.dxlc-badge {
+    display: inline-block;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    background: var(--dxlc-badge-bg);
+    color: var(--dxlc-badge-fg);
+    font-size: 10px;
+    line-height: 1.2;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* ---- Action buttons ------------------------------------------------- */
+.dxlc-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+@media (min-width: 640px) { .dxlc-actions { flex-direction: row; justify-content: flex-end; } }
+
+.dxlc-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+.dxlc-btn:focus-visible { outline: 2px solid var(--dxlc-accent); outline-offset: 2px; }
+
+.dxlc-btn--secondary {
+    border: 1px solid var(--dxlc-border);
+    background: transparent;
+    color: var(--dxlc-muted);
+}
+.dxlc-btn--secondary:hover { background: var(--dxlc-hover); }
+
+.dxlc-btn--primary {
+    border: 1px solid transparent;
+    background: var(--dxlc-accent);
+    color: #ffffff;
+}
+.dxlc-btn--primary:hover { background: var(--dxlc-accent-hover); }
+.dxlc-btn--primary:active { background: var(--dxlc-accent-active); }
+
+/* ---- Enter / leave transitions (Alpine x-transition classes) -------- */
+.dxlc-enter { transition: transform 0.3s ease-out, opacity 0.3s ease-out; }
+.dxlc-enter-from { transform: translateY(100%); opacity: 0; }
+.dxlc-enter-to { transform: translateY(0); opacity: 1; }
+.dxlc-leave { transition: transform 0.2s ease-in, opacity 0.2s ease-in; }
+.dxlc-leave-from { transform: translateY(0); opacity: 1; }
+.dxlc-leave-to { transform: translateY(100%); opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+    .dxlc-enter, .dxlc-leave, .dxlc-toggle-track, .dxlc-toggle-thumb, .dxlc-btn { transition: none; }
+}
