@@ -104,13 +104,14 @@ class InjectCookieConsentBanner
     }
 
     /**
-     * URL of the plugin's self-contained banner stylesheet, served through
-     * the plugin's public assets symlink (`public/assets/plugins/DixlaseCookie
-     * -> resources/assets`).
+     * URL of the plugin's self-contained banner stylesheet. Built by Vite
+     * from resources/src/css/banner.css into resources/assets/css/banner.css
+     * and served through the plugin's public assets symlink
+     * (`public/assets/plugins/DixlaseCookie -> resources/assets`).
      */
     protected function bannerStylesheetUrl(): string
     {
-        return asset('assets/plugins/DixlaseCookie/banner.css');
+        return asset('assets/plugins/DixlaseCookie/css/banner.css');
     }
 
     /**
