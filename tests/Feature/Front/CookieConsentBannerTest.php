@@ -105,7 +105,7 @@ class CookieConsentBannerTest extends TestCase
         $response->assertOk();
         $response->assertSee('data-cookie-consent', false);
         // The plugin's own stylesheet is injected (theme-independent styling).
-        $response->assertSee('assets/plugins/DixlaseCookie/banner.css', false);
+        $response->assertSee('assets/plugins/DixlaseCookie/css/banner.css', false);
         // Auto-opens as a banner on first visit.
         $response->assertSee('data-autoopen="1"', false);
         $response->assertSee('role="dialog"', false);
