@@ -21,6 +21,59 @@ jobs:
             echo "base_dir=/srv/dixlase/staging" >> $GITHUB_OUTPUT
           fi
 
+      # ------------------------------------------------------------------
+      # Frontend build (npm run build).
+      #
+      # The plugin's resources/assets/ directory is gitignored, so
+      # the git-clone-on-server step that follows never brings the
+      # compiled CSS / JS / manifest along. Build them here on the
+      # runner and rsync into a per-plugin _shared/ directory on the
+      # deploy server; the SSH deploy script then copies from
+      # _shared/ into the plugin's resources/assets/ inside every
+      # site's checkout.
+      #
+      # The build step is written to be safe on plugins that carry a
+      # `vite.config.js` but no `package.json` (some older shells of
+      # this workflow do): the shell guard turns it into a clean no-op
+      # that still populates an empty dist/, keeping the rsync target
+      # deterministic across every deploy.
+      # ------------------------------------------------------------------
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build frontend assets (skipped when no package.json)
+        run: |
+          if [ -f package.json ] && jq -e '.scripts.build' package.json > /dev/null 2>&1; then
+            npm ci --no-audit --no-fund
+            NODE_ENV=production npx vite build --outDir dist
+          else
+            echo "No package.json with a build script — skipping frontend build."
+            mkdir -p dist
+          fi
+
+      - name: Create shared build directory on server
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: mkdir -p ${{ steps.target.outputs.base_dir }}/_shared/plugins/DixlaseCookie
+
+      - name: Deploy built assets via rsync
+        uses: burnett01/rsync-deployments@7.0.1
+        with:
+          switches: -avz --delete
+          path: dist/
+          remote_path: ${{ steps.target.outputs.base_dir }}/_shared/plugins/DixlaseCookie/
+          remote_host: ${{ secrets.SERVER_HOST }}
+          remote_user: ${{ secrets.SERVER_USER }}
+          remote_key: ${{ secrets.SERVER_SSH_KEY }}
+
       - name: Deploy plugin via SSH
         uses: appleboy/ssh-action@v1
         with:
@@ -93,6 +146,22 @@ jobs:
 
               if [ -f "$DEST/composer.json" ]; then
                 docker exec compose-php-1 bash -c "cd /var/www/apps/$SITE && composer dump-autoload --no-dev --optimize"
+              fi
+
+              # Copy the frontend build produced on the runner into the
+              # plugin's resources/assets/. The directory is gitignored,
+              # so the git-clone/pull above never brought the compiled
+              # CSS / JS / manifest along, and the on-server prod host
+              # does not have npm to build them locally. A --delete
+              # would be tempting for cleanliness but is intentionally
+              # avoided: hand-authored files such as thumbnail.png live
+              # in the same directory and are re-included from the git
+              # side of the tree, so leaving them alone across pushes
+              # is the safest merge policy.
+              if [ -d "$BASE/_shared/plugins/$PLUGIN_DIR" ]; then
+                mkdir -p "$DEST/resources/assets"
+                rsync -a "$BASE/_shared/plugins/$PLUGIN_DIR/" "$DEST/resources/assets/"
+                docker exec compose-php-1 chown -R 1001:1001 "$CONTAINER_DEST/resources/assets"
               fi
 
               # Invalidate Laravel's compiled bootstrap caches (views, config,
