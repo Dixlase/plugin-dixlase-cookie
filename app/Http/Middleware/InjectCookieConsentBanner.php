@@ -86,9 +86,31 @@ class InjectCookieConsentBanner
             return $response;
         }
 
+        // The banner is styled entirely by the plugin's own stylesheet
+        // (served via the plugin's public assets symlink), so it renders
+        // correctly on any host theme without a theme rebuild. Inject the
+        // link into <head> when present; otherwise fall back to placing it
+        // just before the banner markup.
+        $styleLink = '<link rel="stylesheet" href="'.e($this->bannerStylesheetUrl()).'">';
+        if (str_contains($content, '</head>')) {
+            $content = str_replace('</head>', $styleLink.'</head>', $content);
+        } else {
+            $bannerHtml = $styleLink.$bannerHtml;
+        }
+
         $response->setContent(str_replace('</body>', $bannerHtml.'</body>', $content));
 
         return $response;
+    }
+
+    /**
+     * URL of the plugin's self-contained banner stylesheet, served through
+     * the plugin's public assets symlink (`public/assets/plugins/DixlaseCookie
+     * -> resources/assets`).
+     */
+    protected function bannerStylesheetUrl(): string
+    {
+        return asset('assets/plugins/DixlaseCookie/banner.css');
     }
 
     /**

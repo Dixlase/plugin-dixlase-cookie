@@ -2,6 +2,7 @@
 /vendor
 /resources/assets/*
 !/resources/assets/thumbnail.*
+!/resources/assets/banner.css
 package-lock.json
 .env
 .env.backup
