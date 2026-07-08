@@ -56,16 +56,20 @@
 use App\Enums\MemberRole;
 
 return [
+    // Keys mirror the nav tree in config/admin/navigation.php so the resolver
+    // (PermissionRegistry::getDefaultFromNestedArray) can walk them: top key
+    // `cookie` with a `children` map keyed by the nav child key. Flat dotted
+    // keys never match the walker and silently fall back to ADMIN/ADMIN.
     'permissions' => [
-        // Section landing + settings screen: admin-only, matching the
-        // navigation 'can' => 'admin' gate.
-        'cookie.cookie.index' => [
-            'access_roles' => MemberRole::ADMIN->value,
-            'view_roles' => MemberRole::ADMIN->value,
-        ],
-        'cookie.cookie-settings.index' => [
-            'access_roles' => MemberRole::ADMIN->value,
-            'view_roles' => MemberRole::ADMIN->value,
+        // Cookie consent settings: admin-only, matching the navigation
+        // 'can' => 'admin' gate.
+        'cookie' => [
+            'children' => [
+                'cookie-settings' => [
+                    'access_roles' => MemberRole::ADMIN->value,
+                    'view_roles' => MemberRole::ADMIN->value,
+                ],
+            ],
         ],
     ],
 ];
