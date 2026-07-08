@@ -47,6 +47,11 @@ return [
         '_insert_after' => 'front',
         'text' => 'dixlase-cookie::admin/navigation.cookie.text',
         'icon' => 'fas fa-fw fa-cookie-bite',
+        // Route the sidebar permission check through this plugin's
+        // config/admin/roles.php. Without it the check falls back to core's
+        // PermissionRegistry (no `cookie` entry) and the menu is hidden for
+        // everyone below SUPER_ADMIN. Value is the plugin directory basename.
+        'plugin_slug' => 'DixlaseCookie',
         'can' => 'admin',
         'children' => [
             'cookie-settings' => [
