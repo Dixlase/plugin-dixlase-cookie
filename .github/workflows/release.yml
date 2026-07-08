@@ -1,0 +1,102 @@
+name: Release
+
+# Build the front-end assets and attach a distribution ZIP — with the
+# prebuilt (gitignored) resources/assets bundled — to the GitHub Release.
+#
+# Why: production installs have no Node/npm. The admin-panel extension
+# updater (GitHubSourceProvider::findRelease) downloads the first ".zip"
+# asset on the release's tag and, in `auto` build mode, applies its
+# prebuilt resources/assets WITHOUT running npm on the server. Without a
+# bundled asset the updater falls back to the GitHub source zipball, which
+# omits the gitignored resources/assets and forces a server-side build.
+#
+# Mirrors dixlase-core's release.yml, which bundles public/assets/build the
+# same way. See .backlog/SPINOFF-extension-prebuilt-assets-release.md.
+#
+# Triggers:
+#   - release: published  → build + attach the ZIP to that release.
+#   - workflow_dispatch   → dry run; the ZIP is uploaded as a workflow
+#                           artifact for inspection (no release touched).
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Tag/ref to build (default: the workflow run ref)'
+        required: false
+
+permissions:
+  contents: write # softprops/action-gh-release uploads the ZIP asset
+
+jobs:
+  build:
+    name: Build & attach release ZIP
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Resolve ref
+        id: ref
+        run: |
+          REF="${{ github.event.inputs.ref || github.ref_name }}"
+          echo "ref=$REF" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.ref.outputs.ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm' # package-lock.json is committed, so setup-node can cache
+
+      - name: Build front-end assets
+        # Populates the gitignored resources/assets/ (vite outDir) so the
+        # ZIP can ship prebuilt output. Production hosts never run npm.
+        run: |
+          # npm ci: reproducible install pinned to the committed lockfile.
+          npm ci --no-audit --no-fund
+          npm run build
+
+      - name: Stage distribution tree
+        id: stage
+        run: |
+          TAG="${{ steps.ref.outputs.ref }}"
+          # Wrapper dir so the ZIP extracts under a single top-level folder;
+          # the updater's extractZipReplacingDir strips that wrapper.
+          WRAPPER="dist/DixlaseCookie"
+          mkdir -p "$WRAPPER"
+          rsync -a --exclude-from=.github/release-dist-exclude.txt ./ "$WRAPPER/"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Staged $(du -sh "$WRAPPER" | cut -f1); assets: $(ls resources/assets 2>/dev/null | tr '\n' ' ')"
+
+      - name: Build ZIP
+        id: zip
+        run: |
+          ZIP_NAME="dixlase-cookie-${{ steps.stage.outputs.tag }}.zip"
+          (cd dist && zip -rq "../${ZIP_NAME}" DixlaseCookie)
+          echo "zip=${ZIP_NAME}" >> "$GITHUB_OUTPUT"
+          # Fail loudly if the prebuilt assets did not make it into the ZIP
+          # (css/banner.css is the deterministic vite output — the SCSS entry
+          # resources/src/scss/banner.scss; thumbnail.png is committed, so a
+          # mere non-empty resources/assets is not enough).
+          if ! unzip -l "${ZIP_NAME}" | grep -q 'DixlaseCookie/resources/assets/css/banner.css'; then
+            echo "::error::resources/assets/css/banner.css missing from the release ZIP — the frontend build did not land." >&2
+            exit 1
+          fi
+
+      - name: Attach ZIP to the release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.zip.outputs.zip }}
+
+      - name: Upload ZIP as a workflow artifact (dry run)
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.zip.outputs.zip }}
+          path: ${{ steps.zip.outputs.zip }}

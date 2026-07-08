@@ -1,0 +1,28 @@
+# Excluded from the operator-facing release distribution ZIP built by
+# .github/workflows/release.yml. rsync --exclude-from format — one pattern
+# per line, '#' starts a comment, trailing '/' marks a directory.
+#
+# Everything NOT listed here ships in the ZIP, including the freshly built
+# (gitignored) resources/assets/ and every file covered by plugin.json's
+# signature files-map (plugin.json, signature.sig, composer.json,
+# package.json, package-lock.json, vite.config.js, resources/, app/,
+# config/, database/, lang/, routes/, README/LICENSE/NOTICE, …) so the
+# extracted tree is a complete, signature-consistent extension.
+
+# ----- VCS metadata + CI config (never part of the runtime extension) -----
+.git/
+.github/
+.gitignore
+.gitattributes
+.editorconfig
+
+# ----- Build-time only (assets are already built into resources/assets) -----
+node_modules/
+
+# CI staging dir — without this, rsync recurses into its own target.
+dist/
+
+# ----- Local dev / handoff scratch (not committed / not runtime) -----
+IMPLEMENTATION-PLAN.md
+.phpunit.result.cache
+.DS_Store
