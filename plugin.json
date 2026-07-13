@@ -105,6 +105,16 @@
         "commands": true,
         "middleware": true
     },
+    "deploy": {
+        "_notes": {
+            "en": "Runtime-data protection surface consumed by DixlaseDeploy (and any other deploy tool that resolves App\\Contracts\\PluginIntegration\\DeployProtectionRegistryInterface). plg_dixlase_cookie_consents stores per-visitor opt-in / opt-out records — the primary source of the cookie consent audit trail on the visited environment. Overwriting them from a dev sync would destroy legally-required evidence of consent (mirrors the reasoning behind DixlaseLegal's protection of its own consent table). plg_dixlase_cookie_settings is banner text / category configuration that the operator edits in dev and pushes to prod, so it is NOT protected.",
+            "ja": "DixlaseDeploy (および App\\Contracts\\PluginIntegration\\DeployProtectionRegistryInterface を解決する任意のデプロイツール) が参照するランタイムデータ保護対象。plg_dixlase_cookie_consents は訪問者ごとのオプトイン / オプトアウト記録で、訪問した環境における cookie 同意監査証跡の一次ソース。dev からの同期で上書きすれば法的に必要な同意証跡が消滅する (DixlaseLegal 側の同意テーブル保護と同じ理由)。plg_dixlase_cookie_settings はバナーテキスト / カテゴリ設定で運用者が dev で編集して prod に push するため保護対象**外**。"
+        },
+        "protected_tables": [
+            "dls_plg_dixlase_cookie_consents"
+        ],
+        "protected_storage_paths": []
+    },
     "files": {},
     "signing": {
         "algo": "ed25519",
