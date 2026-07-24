@@ -35,7 +35,7 @@ A short overview of how these files fit together is in [NOTICE](./NOTICE) ([æ—¥æ
 
 ## Contributing
 
-We are not accepting external code Pull Requests at this time. The Contributor License Agreement (CLA) is nearly finalized, but we first want to stabilize operations after the initial release and gauge community response before deciding when to open contributions. When contributions open, they will fall under the [Dixlase Copyright Policy](https://github.com/Dixlase/dixlase-core/blob/main/COPYRIGHT-POLICY.md) and the Dixlase CLA (see CONTRIBUTING.md). Bug reports and proposals via Issues are welcome in the meantime.
+We are not accepting external code Pull Requests at this time. We first want to stabilize operations after the initial release and gauge community response before deciding when to open contributions. When contributions open, they will fall under the [Dixlase Copyright Policy](https://github.com/Dixlase/dixlase-core/blob/main/COPYRIGHT-POLICY.md) and the Dixlase CLA (see CONTRIBUTING.md). Bug reports and proposals via Issues are welcome.
 
 ---
 
