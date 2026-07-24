@@ -53,4 +53,4 @@ Dixlase Cookie は **デュアルライセンス** で配布されています�
 
 ---
 
-(C) exc-D inc.
+© 2026 exc-D inc. and Dixlase contributors
