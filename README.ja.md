@@ -46,9 +46,10 @@ Dixlase Cookie は **デュアルライセンス** で配布されています�
 
 ## コントリビューションについて
 
-現在、外部からのコード Pull Request は受け付けていません。CLA (Contributor License Agreement) の内容はほぼ確定していますが、まずは初期リリース後の運用を安定させ、反響や運用状況を見極めてから受付時期を判断したいと考えています。  
+現在、外部からのコード Pull Request は受け付けていません。  
+まずは初期リリース後の運用を安定させ、反響や運用状況を見極めてから受付時期を判断したいと考えています。  
 受付を開始する際は、[Dixlase Copyright Policy](https://github.com/Dixlase/dixlase-core/blob/main/COPYRIGHT-POLICY.md) と Dixlase CLA(詳細は CONTRIBUTING.md)の対象となります。  
-それまでも Issue での不具合報告・機能提案は歓迎しています。
+なお、Issue での不具合報告・機能提案は歓迎しています。
 
 ---
 
