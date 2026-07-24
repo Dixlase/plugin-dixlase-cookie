@@ -39,4 +39,4 @@ We are not accepting external code Pull Requests at this time. We first want to 
 
 ---
 
-(C) exc-D inc.
+© 2026 exc-D inc. and Dixlase contributors
