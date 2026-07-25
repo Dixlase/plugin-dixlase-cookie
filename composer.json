@@ -3,7 +3,7 @@
     "description": "This is the DixlaseCookie plugin.",
     "type": "dixlase-plugin",
     "version": "1.0.0",
-    "license": "GPL-3.0-or-later",
+    "license": "GPL-3.0",
     "authors": [
         {
             "name": "exc-D inc.",
