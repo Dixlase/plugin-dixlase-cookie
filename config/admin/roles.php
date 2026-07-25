@@ -3,7 +3,7 @@
 /**
  * This file is part of DixlaseCookie.
  *
- * Copyright (C) 2026 exc-D inc.
+ * Copyright (C) 2026 exc-D inc. and Dixlase contributors
  * https://exc-d.com
  *
  * DixlaseCookie is dual-licensed. You may use this file under either:
