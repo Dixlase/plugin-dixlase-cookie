@@ -24,4 +24,4 @@ This policy covers code in the [`plugin-dixlase-cookie`](https://github.com/Dixl
 
 ---
 
-**Contact:** info@dixlase.org
+**Contact:** security@dixlase.org

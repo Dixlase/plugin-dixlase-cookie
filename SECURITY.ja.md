@@ -24,4 +24,4 @@ Dixlase Cookie(またはその他の Dixlase コンポーネント)の脆弱性�
 
 ---
 
-**お問い合わせ:** info@dixlase.org
+**お問い合わせ:** security@dixlase.org
