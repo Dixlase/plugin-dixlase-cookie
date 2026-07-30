@@ -85,8 +85,12 @@ class DixlaseCookieServiceProvider extends ServiceProvider implements CspPolicyP
         // 翻訳ファイルの登録
         $this->loadTranslationsFrom(__DIR__ . '/../../lang', 'dixlase-cookie');
 
-        // マイグレーションの登録
-        $this->loadMigrationsFrom(__DIR__ . '/../../database/migrations');
+        // Migrations are deliberately NOT registered here. They are applied by
+        // PluginMigrator (dls:plugin:install / dls:plugin:update) and recorded in
+        // the dedicated dls_plugin_migrations ledger. Registering them with the
+        // stock migrator makes a bare `php artisan migrate` try to re-create
+        // tables the installer already created (SQLSTATE 42S01).
+        // See PluginLoaderTrait::loadPluginMigrations() in core.
 
         // クッキー同意バナー注入ミドルウェアを web グループに登録
         $this->registerCookieConsentMiddleware();
