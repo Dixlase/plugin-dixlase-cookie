@@ -33,6 +33,8 @@
 namespace Plugins\DixlaseCookie\App\Http\Middleware;
 
 use App\Contracts\Cookie\ConsentStateProviderInterface;
+use App\Contracts\TranslationResolver;
+use App\Helpers\LocaleHelper;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -185,7 +187,14 @@ class InjectCookieConsentBanner
      */
     protected function renderBanner(): string
     {
+        // Render the banner (view + resolveLinks(), both of which call
+        // __()) under bannerLocale(), then always restore the request's
+        // locale so the rest of the response is unaffected.
+        $restore = app()->getLocale();
+
         try {
+            app()->setLocale($this->bannerLocale());
+
             $current = $this->currentSnapshot();
 
             return view('dixlase-cookie::front.cookie-consent-banner', [
@@ -198,6 +207,34 @@ class InjectCookieConsentBanner
             ])->render();
         } catch (\Throwable $e) {
             return '';
+        } finally {
+            app()->setLocale($restore);
+        }
+    }
+
+    /**
+     * Locale the banner UI strings should be rendered in.
+     *
+     * When DixlaseMultilingual is installed it binds TranslationResolver
+     * and the app locale already reflects the visitor's resolved language,
+     * so we honor it (per-visitor localization). Without Multilingual,
+     * core's SetFrontLocale lets the browser Accept-Language header outrank
+     * the site default, which would show an English banner on an otherwise
+     * Japanese, single-language site. In that case fall back to the site's
+     * configured default language so the banner matches the rest of the
+     * page. Any resolution failure falls back to the current app locale so
+     * a hiccup never suppresses the banner.
+     */
+    protected function bannerLocale(): string
+    {
+        try {
+            if (app()->bound(TranslationResolver::class)) {
+                return app()->getLocale();
+            }
+
+            return LocaleHelper::getSiteDefaultLocale();
+        } catch (\Throwable $e) {
+            return app()->getLocale();
         }
     }
 

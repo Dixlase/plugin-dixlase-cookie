@@ -33,6 +33,9 @@
 namespace Plugins\DixlaseCookie\Tests\Feature\Front;
 
 use App\Contracts\Cookie\ConsentStateProviderInterface;
+use App\Contracts\Site\SiteContextInterface;
+use App\Contracts\TranslationResolver;
+use App\Models\Site;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
@@ -41,6 +44,7 @@ use Plugins\DixlaseCookie\App\Http\Middleware\InjectCookieConsentBanner;
 use Plugins\DixlaseCookie\App\Models\DixlaseCookieConsent;
 use Plugins\DixlaseCookie\App\Models\DixlaseCookieSetting;
 use Plugins\DixlaseCookie\App\Services\CookieConsentStateProvider;
+use ReflectionMethod;
 use Tests\TestCase;
 
 /**
@@ -179,5 +183,85 @@ class CookieConsentBannerTest extends TestCase
         $response->assertSee('https://example.com/privacy', false);
         $response->assertSee('https://example.com/cookies', false);
         $response->assertSee(__('dixlase-cookie::front/cookie-consent.privacy_link'), false);
+    }
+
+    /**
+     * Without DixlaseMultilingual, core's SetFrontLocale lets the browser
+     * Accept-Language outrank the site default, so a Japanese single-language
+     * site would show an English banner to an English-browser visitor. The
+     * banner must instead follow the site's configured default language.
+     */
+    public function test_banner_renders_in_site_default_locale_when_multilingual_absent(): void
+    {
+        $this->setSiteDefaultLocale('ja');
+        // Simulate an English-browser visitor: the resolved app locale is en.
+        app()->setLocale('en');
+        $this->assertFalse(app()->bound(TranslationResolver::class));
+
+        DixlaseCookieSetting::setValue(InjectCookieConsentBanner::ENABLED_SETTING_KEY, '1');
+
+        $response = $this->get($this->pageUrl, ['Accept-Language' => 'en']);
+
+        $response->assertOk();
+        // Banner UI is Japanese (site default), not the app/browser locale.
+        $response->assertSee('すべて受け入れる', false);
+        $response->assertDontSee('Accept all', false);
+    }
+
+    /**
+     * renderBanner() must render under the site-default locale but restore
+     * the request locale afterwards so the rest of the response is untouched.
+     */
+    public function test_render_banner_restores_the_request_locale(): void
+    {
+        $this->setSiteDefaultLocale('ja');
+        app()->setLocale('en');
+
+        $html = $this->invokeProtected('renderBanner');
+
+        // Rendered in the site default (ja) ...
+        $this->assertStringContainsString('すべて受け入れる', $html);
+        // ... but the request locale is put back.
+        $this->assertSame('en', app()->getLocale());
+    }
+
+    /**
+     * bannerLocale() honors the visitor's app locale when Multilingual is
+     * present (it binds TranslationResolver), and falls back to the site
+     * default when it is absent.
+     */
+    public function test_banner_locale_uses_app_locale_with_multilingual_else_site_default(): void
+    {
+        $this->setSiteDefaultLocale('ja');
+        app()->setLocale('en');
+
+        // Multilingual absent -> site default.
+        $this->assertFalse(app()->bound(TranslationResolver::class));
+        $this->assertSame('ja', $this->invokeProtected('bannerLocale'));
+
+        // Multilingual present -> visitor's app locale, ignoring site default.
+        app()->instance(TranslationResolver::class, \Mockery::mock(TranslationResolver::class));
+        $this->assertSame('en', $this->invokeProtected('bannerLocale'));
+    }
+
+    /**
+     * Point the primary site's default language at $locale and reload it into
+     * the SiteContext so LocaleHelper::getSiteDefaultLocale() reflects it.
+     */
+    private function setSiteDefaultLocale(string $locale): void
+    {
+        Site::query()->whereKey(1)->update(['primary_locale' => $locale]);
+        app(SiteContextInterface::class)->setCurrent(1);
+    }
+
+    /**
+     * Invoke a protected method on a fresh injector instance.
+     */
+    private function invokeProtected(string $method): string
+    {
+        $ref = new ReflectionMethod(InjectCookieConsentBanner::class, $method);
+        $ref->setAccessible(true);
+
+        return $ref->invoke(new InjectCookieConsentBanner());
     }
 }
