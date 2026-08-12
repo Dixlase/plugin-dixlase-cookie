@@ -54,5 +54,11 @@ use Plugins\DixlaseCookie\App\Http\Controllers\Front\CookieConsentController;
 // withdrawal UI). Intentionally outside any front.ip restriction so
 // every visitor can give or withdraw consent. CSRF protection from the
 // web middleware group still applies.
+//
+// Throttled because a request carrying no consent cookie gets a fresh UUID,
+// which makes updateOrCreate() insert rather than update -- so an unthrottled
+// loop appended a row per request. 20/minute per IP leaves plenty of room for
+// a visitor adjusting categories while bounding the inflow.
 Route::post('/cookie-consent/accept', [CookieConsentController::class, 'accept'])
+    ->middleware('throttle:cookie-consent-accept')
     ->name('dixlase-cookie::cookie-consent.accept');

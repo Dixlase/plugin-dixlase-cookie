@@ -34,14 +34,17 @@ namespace Plugins\DixlaseCookie\App\Providers;
 
 use App\Contracts\Cookie\ConsentStateProviderInterface;
 use App\Contracts\CspPolicyProvider;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Plugins\DixlaseCookie\App\Http\Middleware\InjectCookieConsentBanner;
 use Plugins\DixlaseCookie\App\Services\CookieConsentStateProvider;
 
 /**
  * プラグインのServiceProvider
- * 
+ *
  * CspPolicyProviderを実装することで、プラグインが必要とする
  * 外部リソースのCSPディレクティブを宣言できます。
  * 外部リソースが不要な場合は、implements CspPolicyProvider と
@@ -56,7 +59,7 @@ class DixlaseCookieServiceProvider extends ServiceProvider implements CspPolicyP
     {
         // 設定ファイルをマージ
         $this->mergeConfigFrom(
-            __DIR__ . '/../../config/dixlase_cookie.php',
+            __DIR__.'/../../config/dixlase_cookie.php',
             'dixlase_cookie'
         );
 
@@ -80,10 +83,10 @@ class DixlaseCookieServiceProvider extends ServiceProvider implements CspPolicyP
         $this->registerCspPolicy();
 
         // ビューの登録
-        $this->loadViewsFrom(__DIR__ . '/../../resources/views', 'dixlase-cookie');
+        $this->loadViewsFrom(__DIR__.'/../../resources/views', 'dixlase-cookie');
 
         // 翻訳ファイルの登録
-        $this->loadTranslationsFrom(__DIR__ . '/../../lang', 'dixlase-cookie');
+        $this->loadTranslationsFrom(__DIR__.'/../../lang', 'dixlase-cookie');
 
         // Migrations are deliberately NOT registered here. They are applied by
         // PluginMigrator (dls:plugin:install / dls:plugin:update) and recorded in
@@ -95,18 +98,43 @@ class DixlaseCookieServiceProvider extends ServiceProvider implements CspPolicyP
         // クッキー同意バナー注入ミドルウェアを web グループに登録
         $this->registerCookieConsentMiddleware();
 
+        // 同意記録エンドポイントのレートリミッター
+        $this->registerRateLimiter();
+
         // 注: ルート（routes/web.php, routes/admin.php, routes/api.php）はPluginServiceProviderが自動読み込み
 
         // 公開可能なアセット
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__ . '/../../config/dixlase_cookie.php' => config_path('dixlase_cookie.php'),
+                __DIR__.'/../../config/dixlase_cookie.php' => config_path('dixlase_cookie.php'),
             ], 'dixlase-cookie-config');
 
             $this->publishes([
-                __DIR__ . '/../../resources/views' => resource_path('views/vendor/dixlase-cookie'),
+                __DIR__.'/../../resources/views' => resource_path('views/vendor/dixlase-cookie'),
             ], 'dixlase-cookie-views');
         }
+    }
+
+    /**
+     * Rate-limit the consent endpoint.
+     *
+     * /cookie-consent/accept is unauthenticated by design -- every visitor has
+     * to be able to give or withdraw consent. It was also unthrottled, and a
+     * request that sends no consent cookie gets a fresh UUID from
+     * resolveConsentId(), so updateOrCreate() inserts rather than updates.
+     * Fetching a CSRF token once and posting in a loop therefore appended a
+     * row per request, with nothing bounding the table.
+     *
+     * dls:cookie:prune exists, but it cleans up after the fact; this stops the
+     * inflow. The allowance is deliberately generous: giving consent is a
+     * once-per-visitor action, and a visitor adjusting categories in the
+     * withdrawal UI still stays far below it.
+     */
+    protected function registerRateLimiter(): void
+    {
+        RateLimiter::for('cookie-consent-accept', function (Request $request) {
+            return Limit::perMinute(20)->by($request->ip());
+        });
     }
 
     /**
@@ -139,10 +167,10 @@ class DixlaseCookieServiceProvider extends ServiceProvider implements CspPolicyP
 
     /**
      * CSPディレクティブを取得
-     * 
+     *
      * プラグインが必要とする外部リソースのドメインを指定します。
      * 不要な場合は空の配列を返すか、このメソッドを削除してください。
-     * 
+     *
      * @return array<string, array<string>>
      */
     public function getCspDirectives(): array
@@ -150,19 +178,18 @@ class DixlaseCookieServiceProvider extends ServiceProvider implements CspPolicyP
         return [
             // 例: 外部スクリプトが必要な場合
             // 'script-src' => ['https://cdn.example.com'],
-            // 
+            //
             // 例: 外部スタイルシートが必要な場合
             // 'style-src' => ['https://fonts.googleapis.com'],
-            // 
+            //
             // 例: APIへの接続が必要な場合
             // 'connect-src' => ['https://api.example.com'],
-            // 
+            //
             // 例: 外部画像が必要な場合
             // 'img-src' => ['https://images.example.com'],
-            // 
+            //
             // 例: iframeの埋め込みが必要な場合
             // 'frame-src' => ['https://youtube.com', 'https://vimeo.com'],
         ];
     }
-
 }
