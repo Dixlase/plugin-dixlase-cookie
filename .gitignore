@@ -1,7 +1,6 @@
 /node_modules
 /vendor
 /resources/assets/*
-!/resources/assets/thumbnail.*
 .env
 .env.backup
 .env.production
