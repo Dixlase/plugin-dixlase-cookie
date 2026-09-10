@@ -20,12 +20,12 @@ jobs:
 
     steps:
       - name: Checkout plugin
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: plugin
 
       - name: Checkout core
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: Dixlase/dixlase-core
           ref: main
@@ -51,7 +51,7 @@ jobs:
           mv plugin core/plugins/DixlaseCookie
 
       - name: Cache composer dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: core/vendor
           key: ${{ runner.os }}-php83-composer-${{ hashFiles('core/composer.lock') }}
