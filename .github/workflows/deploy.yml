@@ -152,16 +152,58 @@ jobs:
               # plugin's resources/assets/. The directory is gitignored,
               # so the git-clone/pull above never brought the compiled
               # CSS / JS / manifest along, and the on-server prod host
-              # does not have npm to build them locally. A --delete
-              # would be tempting for cleanliness but is intentionally
-              # avoided: hand-authored files such as thumbnail.png live
-              # in the same directory and are re-included from the git
-              # side of the tree, so leaving them alone across pushes
-              # is the safest merge policy.
+              # does not have npm to build them locally. A blanket
+              # `rsync --delete` would remove hand-authored files such
+              # as thumbnail.png (and its predecessors) that live at
+              # the same asset root, so that approach stays off — the
+              # manifest-driven sweep below handles cleanup instead.
               if [ -d "$BASE/_shared/plugins/$PLUGIN_DIR" ]; then
                 mkdir -p "$DEST/resources/assets"
                 rsync -a "$BASE/_shared/plugins/$PLUGIN_DIR/" "$DEST/resources/assets/"
                 docker exec compose-php-1 chown -R 1001:1001 "$CONTAINER_DEST/resources/assets"
+              fi
+
+              # Sweep stale build artefacts. Vite content-hashes JS/CSS
+              # entry filenames so every build's URLs are unique; without
+              # this sweep, the `rsync -a` above (no --delete) leaves
+              # every prior build's files stacked forever. Files from
+              # the pre-hash era (bare `banner.css`) also get collected
+              # on the first run.
+              #
+              # `manifest.json` is the source of truth for what the
+              # newly-compiled views will reference — anything under
+              # css/ / js/ / fonts/ / images/ / assets/ that isn't
+              # listed is dead weight and gets removed. Hand-authored
+              # files at the resources/assets/ root (thumbnails, etc.)
+              # are deliberately NOT swept — only the known subdirs.
+              #
+              # Trade-off: a browser holding stale HTML with an old
+              # hashed URL will 404 on that asset after this runs,
+              # until the next navigation re-fetches the HTML. HTML is
+              # served without Cache-Control so that window is short.
+              ASSET_ROOT="$DEST/resources/assets"
+              MANIFEST="$ASSET_ROOT/manifest.json"
+              if [ -f "$MANIFEST" ]; then
+                KEEP_LIST=$(mktemp)
+                grep -oE '"file"[[:space:]]*:[[:space:]]*"[^"]+"' "$MANIFEST" \
+                  | sed -E 's/.*"file"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/' \
+                  | sort -u > "$KEEP_LIST"
+                echo "manifest.json" >> "$KEEP_LIST"
+
+                REMOVED=0
+                for SUBDIR in css js fonts images assets; do
+                  DIR="$ASSET_ROOT/$SUBDIR"
+                  [ -d "$DIR" ] || continue
+                  while IFS= read -r -d '' F; do
+                    REL="${F#$ASSET_ROOT/}"
+                    if ! grep -qxF "$REL" "$KEEP_LIST"; then
+                      rm -f "$F"
+                      REMOVED=$((REMOVED + 1))
+                    fi
+                  done < <(find "$DIR" -type f -print0)
+                done
+                rm -f "$KEEP_LIST"
+                echo "Stale-asset sweep: removed $REMOVED file(s) not present in manifest.json"
               fi
 
               # Invalidate Laravel's compiled bootstrap caches (views, config,
