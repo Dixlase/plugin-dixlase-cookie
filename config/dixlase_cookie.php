@@ -21,5 +21,16 @@
  */
 
 return [
-    // Your plugin configuration here...
+    'assets' => [
+        // Path to the Vite manifest.json for this plugin's front-end
+        // bundle. The banner injector middleware reads it to resolve
+        // the current content-hashed CSS filename (`banner-<hash>.css`)
+        // — hard-coding the filename would 404 after every rebuild
+        // that changes the CSS bytes. Overridable so tests can point
+        // at a stub manifest under `storage/framework/testing/` per the
+        // root CLAUDE.md "tests must not touch tracked working-tree
+        // files" rule, without needing the plugin to have run
+        // `npm run build` first.
+        'manifest_path' => base_path('plugins/DixlaseCookie/resources/assets/manifest.json'),
+    ],
 ];
