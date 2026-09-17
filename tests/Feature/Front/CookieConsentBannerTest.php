@@ -39,6 +39,7 @@ use App\Models\Site;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\File;
 use Plugins\DixlaseCookie\App\Http\Controllers\Front\CookieConsentController;
 use Plugins\DixlaseCookie\App\Http\Middleware\InjectCookieConsentBanner;
 use Plugins\DixlaseCookie\App\Models\DixlaseCookieConsent;
@@ -61,6 +62,9 @@ class CookieConsentBannerTest extends TestCase
 
     private string $pageUrl = '/__banner_test_page';
 
+    /** Throwaway directory holding the stub Vite manifest for this test. */
+    private string $tempAssetDir = '';
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -69,6 +73,26 @@ class CookieConsentBannerTest extends TestCase
         // the installer (CI runs against a fresh, uninstalled Core).
         $_ENV['INSTALLED'] = 'true';
         $_SERVER['INSTALLED'] = 'true';
+
+        // Provide a stub Vite manifest so `InjectCookieConsentBanner::
+        // bannerStylesheetUrl()` can resolve the hashed banner CSS
+        // filename without requiring `npm run build` to have run first
+        // (CI's test job does not build assets). Kept under
+        // storage/framework/testing/ per the root CLAUDE.md "tests must
+        // not touch tracked working-tree files" rule — the middleware
+        // reads the path from `config('dixlase_cookie.assets.manifest_path')`
+        // so this override never touches the real plugins/… tree.
+        $this->tempAssetDir = storage_path('framework/testing/cookie-banner-manifest-'.uniqid());
+        File::ensureDirectoryExists($this->tempAssetDir);
+        $stubManifestPath = $this->tempAssetDir.'/manifest.json';
+        File::put($stubManifestPath, (string) json_encode([
+            'resources/src/scss/banner.scss' => [
+                'file' => 'css/banner-testhash.css',
+                'src' => 'resources/src/scss/banner.scss',
+                'isEntry' => true,
+            ],
+        ]));
+        config(['dixlase_cookie.assets.manifest_path' => $stubManifestPath]);
 
         Artisan::call('migrate', [
             '--path' => 'plugins/DixlaseCookie/database/migrations',
@@ -100,6 +124,15 @@ class CookieConsentBannerTest extends TestCase
         $router->getRoutes()->refreshActionLookups();
     }
 
+    protected function tearDown(): void
+    {
+        if ($this->tempAssetDir !== '' && File::isDirectory($this->tempAssetDir)) {
+            File::deleteDirectory($this->tempAssetDir);
+        }
+
+        parent::tearDown();
+    }
+
     public function test_panel_auto_opens_as_a_banner_when_enabled_and_no_consent(): void
     {
         DixlaseCookieSetting::setValue(InjectCookieConsentBanner::ENABLED_SETTING_KEY, '1');
@@ -109,7 +142,12 @@ class CookieConsentBannerTest extends TestCase
         $response->assertOk();
         $response->assertSee('data-cookie-consent', false);
         // The plugin's own stylesheet is injected (theme-independent styling).
-        $response->assertSee('assets/plugins/DixlaseCookie/css/banner.css', false);
+        // Vite content-hashes the built filename (`css/banner-<hash>.css`)
+        // so anchor the assertion on the URL prefix through `banner-` —
+        // the full name changes with every build whose CSS bytes changed,
+        // and the prefix is unique enough that no other injected content
+        // matches it.
+        $response->assertSee('assets/plugins/DixlaseCookie/css/banner-', false);
         // Auto-opens as a banner on first visit.
         $response->assertSee('data-autoopen="1"', false);
         $response->assertSee('role="dialog"', false);

@@ -93,11 +93,20 @@ class InjectCookieConsentBanner
         // correctly on any host theme without a theme rebuild. Inject the
         // link into <head> when present; otherwise fall back to placing it
         // just before the banner markup.
-        $styleLink = '<link rel="stylesheet" href="'.e($this->bannerStylesheetUrl()).'">';
-        if (str_contains($content, '</head>')) {
-            $content = str_replace('</head>', $styleLink.'</head>', $content);
-        } else {
-            $bannerHtml = $styleLink.$bannerHtml;
+        //
+        // `bannerStylesheetUrl()` returns an empty string when the Vite
+        // manifest is missing (fresh checkout not yet built, in-flight
+        // deploy). Skip the `<link>` in that case rather than injecting
+        // a broken `href=""` — the banner still shows with the fallback
+        // inline layout the plugin provides.
+        $stylesheetUrl = $this->bannerStylesheetUrl();
+        if ($stylesheetUrl !== '') {
+            $styleLink = '<link rel="stylesheet" href="'.e($stylesheetUrl).'">';
+            if (str_contains($content, '</head>')) {
+                $content = str_replace('</head>', $styleLink.'</head>', $content);
+            } else {
+                $bannerHtml = $styleLink.$bannerHtml;
+            }
         }
 
         $response->setContent(str_replace('</body>', $bannerHtml.'</body>', $content));
@@ -107,13 +116,42 @@ class InjectCookieConsentBanner
 
     /**
      * URL of the plugin's self-contained banner stylesheet. Built by Vite
-     * from resources/src/css/banner.css into resources/assets/css/banner.css
+     * from resources/src/scss/banner.scss into resources/assets/css/banner-<hash>.css
      * and served through the plugin's public assets symlink
      * (`public/assets/plugins/DixlaseCookie -> resources/assets`).
+     *
+     * Vite content-hashes the built filename (see vite.config.js), so we
+     * cannot hard-code `css/banner.css` here — the file with that literal
+     * name no longer exists. Instead read the current manifest.json,
+     * which Vite regenerates on every build with the up-to-date mapping.
+     * Fall back to a null-safe empty URL when the manifest is unavailable
+     * (fresh checkout that has not been built yet, in-flight deploy) so
+     * the middleware degrades to injecting the banner without a link tag
+     * rather than crashing the response.
      */
     protected function bannerStylesheetUrl(): string
     {
-        return asset('assets/plugins/DixlaseCookie/css/banner.css');
+        // Path comes from `config('dixlase_cookie.assets.manifest_path')`
+        // so tests can point at a stub manifest under storage/framework/
+        // testing/ without needing `npm run build` to have run first,
+        // and without violating the root CLAUDE.md "tests must not
+        // touch tracked working-tree files" rule (the real path lives
+        // inside `plugins/DixlaseCookie/`, which is a tracked repo dir).
+        $manifestPath = (string) config(
+            'dixlase_cookie.assets.manifest_path',
+            base_path('plugins/DixlaseCookie/resources/assets/manifest.json'),
+        );
+        if (! is_file($manifestPath)) {
+            return '';
+        }
+
+        $manifest = json_decode((string) file_get_contents($manifestPath), true);
+        $file = $manifest['resources/src/scss/banner.scss']['file'] ?? null;
+        if (! is_string($file)) {
+            return '';
+        }
+
+        return asset('assets/plugins/DixlaseCookie/'.$file);
     }
 
     /**
