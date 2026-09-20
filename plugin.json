@@ -2,7 +2,7 @@
     "name": "DixlaseCookie",
     "package": "DixlaseCookie",
     "repository": "",
-    "package_name": "plugins/dixlase-cookie",
+    "package_name": "dixlase/dixlase-cookie",
     "slug": "dixlase-cookie",
     "version": "0.2.0",
     "description": {
