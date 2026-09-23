@@ -91,6 +91,25 @@ jobs:
               CONTAINER_DEST="/var/www/apps/$SITE/plugins/$PLUGIN_DIR"
               echo "=== Deploying plugin $PLUGIN_DIR to $SITE (${{ steps.target.outputs.env }}) ==="
 
+              # Deploy backups must NOT sit in plugins/: core's
+              # scripts/sync-local-autoload.php registers every directory there
+              # that has an app/ subdir as an extension, including
+              # <Plugin>.stale.<timestamp>. That pulls the copy's
+              # autoload.files entry into composer.local.json, and composer
+              # requires those files unconditionally -- so deleting such a copy
+              # later takes the WHOLE SITE down, not just this plugin. Park them
+              # outside the scan (dot-prefixed entries are skipped) and migrate
+              # anything an earlier revision of this workflow left behind, so
+              # the first deploy after this change self-heals.
+              BACKUP_ROOT="$BASE/$SITE/.plugin-backups"
+              CONTAINER_BACKUP_ROOT="/var/www/apps/$SITE/.plugin-backups"
+              mkdir -p "$BACKUP_ROOT"
+              for LEGACY in "$BASE/$SITE/plugins/$PLUGIN_DIR".stale.*; do
+                [ -d "$LEGACY" ] || continue
+                echo "  Migrating legacy copy out of plugins/: $LEGACY"
+                mv "$LEGACY" "$BACKUP_ROOT/$(basename "$LEGACY")"
+              done
+
               # ------------------------------------------------------------------
               # Resolve $DEST into one of three shapes and act accordingly:
               #
@@ -134,8 +153,11 @@ jobs:
 
               elif [ -d "$DEST" ]; then
                 BACKUP_BASENAME="${PLUGIN_DIR}.stale.$(date +%Y%m%d-%H%M%S)"
-                echo "WARNING: $DEST exists but has no nested .git; moving aside to plugins/$BACKUP_BASENAME and re-cloning fresh."
-                docker exec compose-php-1 mv "$CONTAINER_DEST" "/var/www/apps/$SITE/plugins/$BACKUP_BASENAME"
+                echo "WARNING: $DEST exists but has no nested .git; moving aside to .plugin-backups/$BACKUP_BASENAME and re-cloning fresh."
+                # This branch should fire once, not on every deploy. If it
+                # recurs, something between deploys removes the nested .git.
+                echo "  Contents before move-aside: $(ls -A "$DEST" | wc -l) entr(ies); .git present: no"
+                docker exec compose-php-1 mv "$CONTAINER_DEST" "$CONTAINER_BACKUP_ROOT/$BACKUP_BASENAME"
                 git clone --branch main "$EXPECTED_URL" "$DEST"
                 docker exec compose-php-1 chown -R 1001:1001 "$CONTAINER_DEST"
 
@@ -144,8 +166,29 @@ jobs:
                 docker exec compose-php-1 chown -R 1001:1001 "$CONTAINER_DEST"
               fi
 
+              # Keep only the newest backup, ordered by the timestamp in the
+              # NAME. `ls -t` orders by mtime, which mv carries over from the
+              # original tree, so the copy this run just made can look older
+              # than one from months ago and get pruned in its place.
+              STALE_KEEP=1
+              for OLD in $(ls -d "$BACKUP_ROOT/$PLUGIN_DIR".stale.* 2>/dev/null | sort -r | tail -n +$((STALE_KEEP + 1))); do
+                case "$OLD" in
+                  "$BACKUP_ROOT/$PLUGIN_DIR".stale.*)
+                    echo "  Pruning old move-aside copy: $OLD"
+                    rm -rf "$OLD"
+                    ;;
+                  *)
+                    echo "  Refusing to prune unexpected path: $OLD" >&2
+                    ;;
+                esac
+              done
+
               if [ -f "$DEST/composer.json" ]; then
-                docker exec compose-php-1 bash -c "cd /var/www/apps/$SITE && composer dump-autoload --no-dev --optimize"
+                # Regenerate composer.local.json too, not just the autoload
+                # map: it is built from whatever plugins/ and themes/ hold at
+                # that moment, so on its own `dump-autoload` happily re-reads a
+                # file that still names a directory this run moved.
+                docker exec compose-php-1 bash -c "cd /var/www/apps/$SITE && if [ -f scripts/sync-local-autoload.php ]; then php scripts/sync-local-autoload.php; fi && composer dump-autoload --no-dev --optimize"
               fi
 
               # Copy the frontend build produced on the runner into the
