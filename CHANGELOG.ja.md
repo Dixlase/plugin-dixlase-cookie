@@ -5,8 +5,7 @@ DixlaseCookie プラグインの主要な変更はすべてこのファイルに
 フォーマットは [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) に準拠し、
 本プラグインはセマンティックバージョニングに従います。
 
-## [0.1.0] — YYYY-MM-DD
-
+## [0.1.0] — 2026-10-01
 初回リリース。Dixlase `^0.1.0`（Plugin API `^0.1`）、PHP `>= 8.3` が必要です。
 
 ### 追加
