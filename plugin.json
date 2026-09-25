@@ -17,7 +17,7 @@
     "license": "GPL-3.0",
     "license_template": "license-dual-gpl.txt",
     "commercial_license": {
-        "available": true,
+        "available": false,
         "file": "LICENSE-COMMERCIAL",
         "contact": "info@dixlase.org"
     },
