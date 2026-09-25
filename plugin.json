@@ -4,7 +4,7 @@
     "repository": "",
     "package_name": "dixlase/dixlase-cookie",
     "slug": "dixlase-cookie",
-    "version": "0.2.0",
+    "version": "0.1.0",
     "description": {
         "en": "GDPR-ready cookie consent plugin. Provides a per-category consent banner (necessary / functional / analytics / marketing) and a re-openable panel to withdraw consent anytime.",
         "ja": "GDPR対応のクッキー同意プラグイン。カテゴリ別（必須／機能／分析／マーケティング）の同意バナーと、同意をいつでも撤回できる設定画面を提供します。"
@@ -14,7 +14,7 @@
     "authority_key_id": "dixlase-authority-2026",
     "email": "info@dixlase.org",
     "url": "https://exc-d.com",
-    "license": "GPL-3.0",
+    "license": "GPL-3.0-or-later",
     "license_template": "license-dual-gpl.txt",
     "commercial_license": {
         "available": false,
