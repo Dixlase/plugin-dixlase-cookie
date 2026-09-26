@@ -144,6 +144,7 @@
         "app/Providers/DixlaseCookieServiceProvider.php": "sha256:6d742b6a5a8c57b3a4078b33cedb27cd12aa22fd43cc0844ab6efe9f4e23fbb7",
         "app/Services/CookieConsentStateProvider.php": "sha256:d14806cfd9d6b426ca16cd6c33ccc58f0ee93da73a12b9980141bd612b9e2ee1",
         "composer.json": "sha256:d46b42ccafc8650211087ada999fa3ae620a478472dc0e9e1ab12db662414023",
+        "config/admin.php": "sha256:93413a461e7eec4baa95544a5796e102fcceff37e3bf0e68d28586d2044374e9",
         "config/admin/database-cleanup.php": "sha256:e3786d8fa87a2f4ca497843bc7f168f3e3989e5f3fa12fd2ad71f582d66a6750",
         "config/admin/navigation.php": "sha256:b642a2a8c30fa5fc06046aaa23dfe1ee055c5534937b1913e6f1981696fdec98",
         "config/admin/roles.php": "sha256:1237e577bc2f96493d3d5717064fa926addd1b1f50413280bc295d82a2074608",
@@ -189,6 +190,6 @@
     "signing": {
         "algo": "ed25519",
         "key_id": "dixlase-authority-2026",
-        "signed_at": "2026-09-26T13:40:50+00:00"
+        "signed_at": "2026-09-26T16:53:54+00:00"
     }
 }
