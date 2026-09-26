@@ -87,8 +87,33 @@ jobs:
             EXPECTED_URL="git@github.com:${{ github.repository }}.git"
 
             for SITE in brand demo; do
-              DEST="$BASE/$SITE/plugins/$PLUGIN_DIR"
-              CONTAINER_DEST="/var/www/apps/$SITE/plugins/$PLUGIN_DIR"
+              # Resolve the site layout. A Docker Installer instance keeps the app in
+              # $BASE/$SITE/html and runs its own PHP container named after
+              # CONTAINER_PREFIX in $BASE/$SITE/.env, with files owned by
+              # deploy:www-data. The legacy shared stack mounts $BASE/$SITE into
+              # compose-php-1 at /var/www/apps/$SITE, owned by deploy:deploy.
+              if [ -f "$BASE/$SITE/docker-compose.yml" ] && [ -d "$BASE/$SITE/html" ]; then
+                SITE_ROOT="$BASE/$SITE/html"
+                APP_ROOT="/var/www/html"
+                PREFIX=$(grep -E '^CONTAINER_PREFIX=' "$BASE/$SITE/.env" 2>/dev/null | cut -d= -f2)
+                PHP_CONTAINER="${PREFIX:-dixlase-$SITE}-app"
+                OWNER="1001:33"
+                RUN_AS="-u www-data"
+              else
+                SITE_ROOT="$BASE/$SITE"
+                APP_ROOT="/var/www/apps/$SITE"
+                PHP_CONTAINER="compose-php-1"
+                OWNER="1001:1001"
+                RUN_AS=""
+              fi
+              # Installer sites need group write too: www-data writes caches and the
+              # deploy user's next rsync must be able to replace what it wrote.
+              fix_owner() {
+                docker exec "$PHP_CONTAINER" chown -R "$OWNER" "$@"
+                if [ -n "$RUN_AS" ]; then docker exec "$PHP_CONTAINER" chmod -R g+rwX "$@"; fi
+              }
+              DEST="$SITE_ROOT/plugins/$PLUGIN_DIR"
+              CONTAINER_DEST="$APP_ROOT/plugins/$PLUGIN_DIR"
               echo "=== Deploying plugin $PLUGIN_DIR to $SITE (${{ steps.target.outputs.env }}) ==="
 
               # Deploy backups must NOT sit in plugins/: core's
@@ -101,10 +126,10 @@ jobs:
               # outside the scan (dot-prefixed entries are skipped) and migrate
               # anything an earlier revision of this workflow left behind, so
               # the first deploy after this change self-heals.
-              BACKUP_ROOT="$BASE/$SITE/.plugin-backups"
-              CONTAINER_BACKUP_ROOT="/var/www/apps/$SITE/.plugin-backups"
+              BACKUP_ROOT="$SITE_ROOT/.plugin-backups"
+              CONTAINER_BACKUP_ROOT="$APP_ROOT/.plugin-backups"
               mkdir -p "$BACKUP_ROOT"
-              for LEGACY in "$BASE/$SITE/plugins/$PLUGIN_DIR".stale.*; do
+              for LEGACY in "$SITE_ROOT/plugins/$PLUGIN_DIR".stale.*; do
                 [ -d "$LEGACY" ] || continue
                 echo "  Migrating legacy copy out of plugins/: $LEGACY"
                 mv "$LEGACY" "$BACKUP_ROOT/$(basename "$LEGACY")"
@@ -146,7 +171,7 @@ jobs:
                   exit 1
                 fi
 
-                docker exec compose-php-1 chown -R 1001:1001 "$CONTAINER_DEST"
+                fix_owner "$CONTAINER_DEST"
                 cd "$DEST"
                 git fetch origin
                 git reset --hard origin/main
@@ -157,13 +182,13 @@ jobs:
                 # This branch should fire once, not on every deploy. If it
                 # recurs, something between deploys removes the nested .git.
                 echo "  Contents before move-aside: $(ls -A "$DEST" | wc -l) entr(ies); .git present: no"
-                docker exec compose-php-1 mv "$CONTAINER_DEST" "$CONTAINER_BACKUP_ROOT/$BACKUP_BASENAME"
+                docker exec "$PHP_CONTAINER" mv "$CONTAINER_DEST" "$CONTAINER_BACKUP_ROOT/$BACKUP_BASENAME"
                 git clone --branch main "$EXPECTED_URL" "$DEST"
-                docker exec compose-php-1 chown -R 1001:1001 "$CONTAINER_DEST"
+                fix_owner "$CONTAINER_DEST"
 
               else
                 git clone --branch main "$EXPECTED_URL" "$DEST"
-                docker exec compose-php-1 chown -R 1001:1001 "$CONTAINER_DEST"
+                fix_owner "$CONTAINER_DEST"
               fi
 
               # Keep only the newest backup, ordered by the timestamp in the
@@ -188,7 +213,7 @@ jobs:
                 # map: it is built from whatever plugins/ and themes/ hold at
                 # that moment, so on its own `dump-autoload` happily re-reads a
                 # file that still names a directory this run moved.
-                docker exec compose-php-1 bash -c "cd /var/www/apps/$SITE && if [ -f scripts/sync-local-autoload.php ]; then php scripts/sync-local-autoload.php; fi && composer dump-autoload --no-dev --optimize"
+                docker exec $RUN_AS "$PHP_CONTAINER" sh -c "cd $APP_ROOT && if [ -f scripts/sync-local-autoload.php ]; then php scripts/sync-local-autoload.php; fi && composer dump-autoload --no-dev --optimize"
               fi
 
               # Copy the frontend build produced on the runner into the
@@ -203,7 +228,7 @@ jobs:
               if [ -d "$BASE/_shared/plugins/$PLUGIN_DIR" ]; then
                 mkdir -p "$DEST/resources/assets"
                 rsync -a "$BASE/_shared/plugins/$PLUGIN_DIR/" "$DEST/resources/assets/"
-                docker exec compose-php-1 chown -R 1001:1001 "$CONTAINER_DEST/resources/assets"
+                fix_owner "$CONTAINER_DEST/resources/assets"
               fi
 
               # Sweep stale build artefacts. Vite content-hashes JS/CSS
@@ -253,7 +278,7 @@ jobs:
               # routes, events) so blade / config / route changes shipped by
               # this push take effect on the next request without waiting for
               # OPcache revalidation or a PHP-FPM reload.
-              docker exec compose-php-1 php /var/www/apps/$SITE/artisan optimize:clear
+              docker exec $RUN_AS "$PHP_CONTAINER" php $APP_ROOT/artisan optimize:clear
             done
 
             echo "=== Plugin deploy complete ==="
