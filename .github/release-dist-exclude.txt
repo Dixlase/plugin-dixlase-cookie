@@ -10,9 +10,12 @@
 # extracted tree is a complete, signature-consistent extension.
 
 # ----- VCS metadata + CI config (never part of the runtime extension) -----
+# .gitignore is deliberately NOT excluded: the signature verifier reads it
+# from the extracted tree to know which paths to skip, and without it the
+# shipped (gitignored) resources/assets/* count as unsigned extra files,
+# which reports the extension as tampered with.
 .git/
 .github/
-.gitignore
 .gitattributes
 .editorconfig
 
