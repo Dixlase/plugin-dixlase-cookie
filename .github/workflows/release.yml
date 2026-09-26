@@ -79,12 +79,13 @@ jobs:
           ZIP_NAME="dixlase-cookie-${{ steps.stage.outputs.tag }}.zip"
           (cd dist && zip -rq "../${ZIP_NAME}" DixlaseCookie)
           echo "zip=${ZIP_NAME}" >> "$GITHUB_OUTPUT"
-          # Fail loudly if the prebuilt assets did not make it into the ZIP
-          # (css/banner.css is the deterministic vite output — the SCSS entry
-          # resources/src/scss/banner.scss; thumbnail.png is committed, so a
-          # mere non-empty resources/assets is not enough).
-          if ! unzip -l "${ZIP_NAME}" | grep -q 'DixlaseCookie/resources/assets/css/banner.css'; then
-            echo "::error::resources/assets/css/banner.css missing from the release ZIP — the frontend build did not land." >&2
+          # Fail loudly if the prebuilt assets did not make it into the ZIP.
+          # The SCSS entry resources/src/scss/banner.scss builds to
+          # css/banner-<hash>.css, so match the stem rather than a fixed
+          # filename; thumbnail.png is committed, so a merely non-empty
+          # resources/assets is not enough.
+          if ! unzip -l "${ZIP_NAME}" | grep -qE 'DixlaseCookie/resources/assets/css/banner-[A-Za-z0-9_-]+\.css'; then
+            echo "::error::resources/assets/css/banner-<hash>.css missing from the release ZIP — the frontend build did not land." >&2
             exit 1
           fi
 
