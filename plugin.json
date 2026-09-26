@@ -163,8 +163,8 @@
         "lang/ja/admin/navigation.php": "sha256:fb0066d911bc3bcbc89358a563bef3432c1985e8aa76691825415ea8f376c1c4",
         "lang/ja/dixlase_cookie.php": "sha256:617bbb1311615f5b01f3f169ccaa34b33d1953df500aea1009e39beab98668eb",
         "lang/ja/front/cookie-consent.php": "sha256:f13f8fa07ce944b6ae575c45c38f876f196d17fd3781edb29c8787cdbdf543c0",
-        "package-lock.json": "sha256:82835c67a737a3dc839a3e56a14123fea6fd8eaf6d39079c6c4d40d2da439a09",
-        "package.json": "sha256:5ae7dbc689393d36e72efe3a49b71103ce14e766cd92c0b0bb3e47cfddfd8651",
+        "package-lock.json": "sha256:0de18aab91f4adc5001618240d43dd84e210ad9d84dc4ba74cd5ec3c833a3d0d",
+        "package.json": "sha256:7acbc474b5e0a97af1decf27359652e39759abe1b755576454a8ba856180d051",
         "phpunit.xml": "sha256:5af224233d2b1a5dd0fb482b2b0ef525a5a821044a0c25e8eff2f8f3a52190d7",
         "resources/src/css/style.scss": "sha256:13bf4ad2a5103944bdd0d24edda1480d6a47fb4e6df22f7b53acec4164a3dfc2",
         "resources/src/js/app.js": "sha256:9224382f27ee17d51b073616c9c1fefb563026e8c08509388facb86256510077",
@@ -184,11 +184,11 @@
         "tests/Unit/Services/CookieConsentStateProviderTest.php": "sha256:e3b8f3f601fa036c53ae88d23aaab6cf436f27d5807fb475327130f883c842e1",
         "tests/Unit/VersionManifestConsistencyTest.php": "sha256:fe6a49fabe1b5c4de7744355bbd2df010fa6a69b12799b610449be0796af964a",
         "thumbnail.png": "sha256:33f29a06ad4471f22dfaf68ae3f0795f7048dbc55d26ef35ff216ff8f56e7052",
-        "vite.config.js": "sha256:6288ce82544b23f9ddbab91ac214ec27f9f7311394df5d7d2e47818b9d6c51b2"
+        "vite.config.js": "sha256:f58592579df01d5a8dd52f29a173895a7759bd4e93b0722e86db17167961c1d8"
     },
     "signing": {
         "algo": "ed25519",
         "key_id": "dixlase-authority-2026",
-        "signed_at": "2026-09-26T03:31:15+00:00"
+        "signed_at": "2026-09-26T13:40:50+00:00"
     }
 }
