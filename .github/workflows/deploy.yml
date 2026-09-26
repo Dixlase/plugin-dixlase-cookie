@@ -99,12 +99,17 @@ jobs:
                 PHP_CONTAINER="${PREFIX:-dixlase-$SITE}-app"
                 OWNER="1001:33"
                 RUN_AS="-u www-data"
+                # The installer keeps dev packages in vendor/, so an autoload map
+                # built with --no-dev drops their service providers and every request
+                # then fails in package discovery.
+                NO_DEV=""
               else
                 SITE_ROOT="$BASE/$SITE"
                 APP_ROOT="/var/www/apps/$SITE"
                 PHP_CONTAINER="compose-php-1"
                 OWNER="1001:1001"
                 RUN_AS=""
+                NO_DEV="--no-dev"
               fi
               # Installer sites need group write too: www-data writes caches and the
               # deploy user's next rsync must be able to replace what it wrote.
@@ -213,7 +218,7 @@ jobs:
                 # map: it is built from whatever plugins/ and themes/ hold at
                 # that moment, so on its own `dump-autoload` happily re-reads a
                 # file that still names a directory this run moved.
-                docker exec $RUN_AS "$PHP_CONTAINER" sh -c "cd $APP_ROOT && if [ -f scripts/sync-local-autoload.php ]; then php scripts/sync-local-autoload.php; fi && composer dump-autoload --no-dev --optimize"
+                docker exec $RUN_AS "$PHP_CONTAINER" sh -c "cd $APP_ROOT && if [ -f scripts/sync-local-autoload.php ]; then php scripts/sync-local-autoload.php; fi && composer dump-autoload $NO_DEV --optimize"
               fi
 
               # Copy the frontend build produced on the runner into the
