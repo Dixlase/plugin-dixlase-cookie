@@ -1,6 +1,6 @@
 {
   "name": "plugins/dixlase-cookie",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "DixlaseCookie - A custom plugin for Dixlase",
   "private": true,
   "type": "module",
