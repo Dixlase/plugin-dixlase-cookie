@@ -46,8 +46,10 @@ return [
     'always_on' => '常時有効',
 
     'reject_all' => 'すべて拒否',
-    'save_selection' => '選択を保存',
-    'accept_all' => 'すべて受け入れる',
+    'customize' => '詳細設定',
+    'collapse' => '詳細を閉じる',
+    'save_selection' => 'この設定で許可',
+    'accept_all' => 'すべて許可',
 
     'reopen' => 'Cookie',
     'close' => '閉じる',

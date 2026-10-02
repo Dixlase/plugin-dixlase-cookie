@@ -5,6 +5,22 @@ All notable changes to the DixlaseCookie plugin are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this plugin follows Semantic Versioning.
 
+## [0.1.2] — 2026-10-03
+
+### Changed
+
+- The consent banner opens compact on every screen: a short summary with Reject /
+  Customize / Accept on one line, and the category toggles behind a "Customize"
+  accordion (#20, fixes #18). It no longer covers about half of a phone screen, and
+  desktop and tablet show the same narrow card at the bottom instead of a wide bar.
+- Button labels are shorter (Reject / Customize / Accept; 「すべて拒否」「詳細設定」
+  「すべて許可」), and "Accept selected" sits below the toggles.
+
+### Known issues
+
+- With the details collapsed, the hidden toggles can still be reached with Tab (#19).
+  The main buttons stay visible and usable, so consent is never blocked.
+
 ## [0.1.1] — 2026-10-01
 
 ### Changed

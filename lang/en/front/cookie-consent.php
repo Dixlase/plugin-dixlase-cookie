@@ -45,9 +45,11 @@ return [
 
     'always_on' => 'Always on',
 
-    'reject_all' => 'Reject all',
-    'save_selection' => 'Save selection',
-    'accept_all' => 'Accept all',
+    'reject_all' => 'Reject',
+    'customize' => 'Customize',
+    'collapse' => 'Hide',
+    'save_selection' => 'Accept selected',
+    'accept_all' => 'Accept',
 
     'reopen' => 'Cookie',
     'close' => 'Close',

@@ -94,7 +94,9 @@
 
 .dxlc-card {
     position: relative;
-    max-width: 48rem;             /* max-w-3xl */
+    /* Same compact width on every screen: on desktop/tablet the banner is a
+       small bottom-centered card, not a full-width bar. */
+    max-width: 28rem;
     margin-left: auto;
     margin-right: auto;
     padding: 1rem;
@@ -107,7 +109,13 @@
     color: var(--dxlc-fg);
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    /* No flex `gap`: the collapsible details section must contribute zero
+       height AND zero surrounding space when closed, so spacing is applied
+       with margins instead (the collapsing region owns its own top space). */
+    /* Never taller than the viewport; scroll inside on short screens
+       (e.g. small phones once the category toggles are expanded). */
+    max-height: calc(100dvh - 2rem);
+    overflow-y: auto;
 }
 @media (min-width: 640px) { .dxlc-card { padding: 1.5rem; } }
 
@@ -132,13 +140,44 @@
 .dxlc-close .dxlc-icon { width: 1.25rem; height: 1.25rem; }
 
 /* ---- Header --------------------------------------------------------- */
-.dxlc-head { display: flex; flex-direction: column; gap: 0.5rem; padding-right: 2rem; }
-.dxlc-title { margin: 0; font-size: 1rem; font-weight: 600; color: var(--dxlc-fg); }
-.dxlc-message { margin: 0; font-size: 0.875rem; line-height: 1.4; color: var(--dxlc-muted); }
+/* Only the title needs to clear the top-right close button; the message and
+   links use the full card width so lines fit more characters. */
+.dxlc-head { display: flex; flex-direction: column; gap: 0.5rem; }
+.dxlc-title { margin: 0; font-size: 1rem; font-weight: 600; color: var(--dxlc-fg); padding-right: 2rem; }
+/* `text-wrap: balance` evens the line lengths so the message never leaves a
+   stray tail (e.g. a lone "い。") on the last line; older browsers just wrap
+   normally. */
+.dxlc-message { margin: 0; font-size: 0.875rem; line-height: 1.4; color: var(--dxlc-muted); text-wrap: balance; }
 .dxlc-links { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.75rem; font-size: 0.75rem; }
 .dxlc-link { color: var(--dxlc-accent); text-decoration: none; }
 .dxlc-link:hover { text-decoration: underline; }
 .dxlc-sep { color: var(--dxlc-subtle); }
+
+/* ---- Collapsible details (accordion) -------------------------------- */
+/* grid-template-rows 0fr -> 1fr animates to the content's natural height
+   with no fixed max-height guesswork; the inner clips during the motion. */
+.dxlc-details {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.3s ease;
+}
+.dxlc-details.is-open { grid-template-rows: 1fr; }
+.dxlc-details-inner {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+/* Top space for the toggles exists only while open, so the closed state
+   collapses to exactly zero height with no leaked padding. */
+.dxlc-details.is-open .dxlc-details-inner { padding-top: 0.75rem; }
+
+/* ---- "Save selection" button below the toggles (expanded state) ----- */
+/* Right-aligned, same visual style as the action-row buttons. */
+.dxlc-save {
+    align-self: flex-end;
+    margin-top: 0.75rem;
+}
 
 /* ---- Category grid + toggles --------------------------------------- */
 .dxlc-cats {
@@ -147,7 +186,8 @@
     column-gap: 1rem;
     row-gap: 0.25rem;
 }
-@media (min-width: 768px) { .dxlc-cats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+/* Always two columns: the card is now the same narrow width on every screen,
+   so the previous 4-column desktop grid would be far too cramped. */
 
 .dxlc-toggle {
     display: inline-flex;
@@ -211,24 +251,37 @@
 /* ---- Action buttons ------------------------------------------------- */
 .dxlc-actions {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 0.5rem;
+    /* Replaces the removed card gap: constant space above the action row
+       whether the details section is open or collapsed. */
+    margin-top: 0.75rem;
 }
-@media (min-width: 640px) { .dxlc-actions { flex-direction: row; justify-content: flex-end; } }
+/* Equal-width buttons sharing one row on small screens. */
+.dxlc-actions .dxlc-btn { flex: 1 1 0; min-width: 0; }
+@media (min-width: 640px) {
+    .dxlc-actions { justify-content: flex-end; }
+    .dxlc-actions .dxlc-btn { flex: 0 0 auto; }
+}
 
 .dxlc-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.5rem 1rem;
+    text-align: center;
+    padding: 0.5rem 0.625rem;
     border-radius: 0.375rem;
     font-size: 0.75rem;
+    line-height: 1.2;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    /* Trimmed from 0.1em: the wider tracking pushed the Japanese labels
+       past the button width once all three share one row. */
+    letter-spacing: 0.02em;
     cursor: pointer;
     transition: background-color 0.15s ease, color 0.15s ease;
 }
+@media (min-width: 640px) { .dxlc-btn { padding: 0.5rem 1rem; } }
 .dxlc-btn:focus-visible { outline: 2px solid var(--dxlc-accent); outline-offset: 2px; }
 
 .dxlc-btn--secondary {
