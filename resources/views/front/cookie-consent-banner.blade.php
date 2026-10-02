@@ -63,6 +63,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
      class="dxlc"
      x-data="{
         open: {{ $autoOpen ? 'true' : 'false' }},
+        {{-- Collapsed-first on every screen: the compact banner shows only
+             reject / customize / accept so it covers less of the page; the
+             category toggles appear when the visitor taps "customize". The
+             card is the same compact width on desktop, so there is no reason
+             to pre-expand it there. --}}
+        showDetails: false,
+        detailsClass() { return this.showDetails ? 'is-open' : ''; },
         {{-- Strings '1'/'0' so an unchecked toggle posts a definite denial. --}}
         cats: {
             functional: '{{ ($current['functional'] ?? false) ? '1' : '0' }}',
@@ -143,8 +150,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 @endif
             </div>
 
-            {{-- Category toggles. Per-category descriptions intentionally live
-                 in the linked cookie policy, not inline, to keep it small. --}}
+            {{-- Collapsible details (category toggles + per-selection save),
+                 animated open/closed like an accordion via CSS grid rows
+                 (no Alpine plugin needed, so it stays theme-independent).
+                 Per-category descriptions live in the linked cookie policy,
+                 not inline, to keep it small. --}}
+            <div class="dxlc-details" :class="detailsClass()">
+              <div class="dxlc-details-inner">
             <div class="dxlc-cats">
                 <label class="dxlc-toggle dxlc-toggle--disabled">
                     <input type="checkbox" class="dxlc-toggle-input" checked disabled>
@@ -178,12 +190,26 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 </label>
             </div>
 
+                {{-- Save the current selection; styled like the action buttons
+                     (right-aligned), inside the collapsible panel. --}}
+                <button type="button"
+                        @click="saveSelection()"
+                        class="dxlc-btn dxlc-btn--secondary dxlc-save">
+                    {{ __('dixlase-cookie::front/cookie-consent.save_selection') }}
+                </button>
+              </div>
+            </div>
+
             <div class="dxlc-actions">
                 <button type="button" @click="rejectAll()" class="dxlc-btn dxlc-btn--secondary">
                     {{ __('dixlase-cookie::front/cookie-consent.reject_all') }}
                 </button>
-                <button type="button" @click="saveSelection()" class="dxlc-btn dxlc-btn--secondary">
-                    {{ __('dixlase-cookie::front/cookie-consent.save_selection') }}
+                {{-- Single slot that toggles the detail panel open / closed. --}}
+                <button type="button" @click="showDetails = true" x-show="!showDetails" class="dxlc-btn dxlc-btn--secondary">
+                    {{ __('dixlase-cookie::front/cookie-consent.customize') }}
+                </button>
+                <button type="button" @click="showDetails = false" x-show="showDetails" class="dxlc-btn dxlc-btn--secondary">
+                    {{ __('dixlase-cookie::front/cookie-consent.collapse') }}
                 </button>
                 <button type="button" @click="acceptAll()" class="dxlc-btn dxlc-btn--primary">
                     {{ __('dixlase-cookie::front/cookie-consent.accept_all') }}
