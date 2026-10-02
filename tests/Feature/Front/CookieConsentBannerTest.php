@@ -242,8 +242,8 @@ class CookieConsentBannerTest extends TestCase
 
         $response->assertOk();
         // Banner UI is Japanese (site default), not the app/browser locale.
-        $response->assertSee('すべて受け入れる', false);
-        $response->assertDontSee('Accept all', false);
+        $response->assertSee(__('dixlase-cookie::front/cookie-consent.accept_all', [], 'ja'), false);
+        $response->assertDontSee(__('dixlase-cookie::front/cookie-consent.customize', [], 'en'), false);
     }
 
     /**
@@ -258,7 +258,7 @@ class CookieConsentBannerTest extends TestCase
         $html = $this->invokeProtected('renderBanner');
 
         // Rendered in the site default (ja) ...
-        $this->assertStringContainsString('すべて受け入れる', $html);
+        $this->assertStringContainsString(__('dixlase-cookie::front/cookie-consent.accept_all', [], 'ja'), $html);
         // ... but the request locale is put back.
         $this->assertSame('en', app()->getLocale());
     }
