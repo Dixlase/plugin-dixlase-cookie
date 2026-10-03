@@ -95,9 +95,12 @@
 .dxlc-card {
     position: relative;
     /* Same compact width on every screen: on desktop/tablet the banner is a
-       small bottom-centered card, not a full-width bar. */
+       small card in the bottom-left corner — the same corner as the
+       re-open trigger pill — not a full-width bar or a centred card. On
+       phones the card fills the available width, so left-aligning is a
+       no-op there. */
     max-width: 28rem;
-    margin-left: auto;
+    margin-left: 0;
     margin-right: auto;
     padding: 1rem;
     border-radius: 0.5rem;
