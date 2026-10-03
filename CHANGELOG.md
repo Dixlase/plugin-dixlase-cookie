@@ -5,6 +5,26 @@ All notable changes to the DixlaseCookie plugin are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this plugin follows Semantic Versioning.
 
+## [0.1.3] — 2026-10-03
+
+### Changed
+
+- On desktop and tablet the banner sits in the bottom-left corner instead of the bottom
+  centre, so it no longer covers the middle of the page (#23, fixes #22).
+
+### Development
+
+- The built front-end assets (`resources/assets/`) are no longer tracked in git (#23,
+  fixes #24). A committed `manifest.json` could point at an old build, so a local checkout
+  showed the previous banner after pulling. Run `npm run build` in a local checkout;
+  deployments and the release ZIP build the assets as before. The assets were never part of
+  the signature, so signing is unaffected.
+
+### Upgrade notes
+
+No action needed for sites that install from a release or receive deployments. In a git
+checkout of the plugin, run `npm ci && npm run build` once after pulling.
+
 ## [0.1.2] — 2026-10-03
 
 ### Changed
