@@ -164,7 +164,7 @@
         "lang/ja/admin/navigation.php": "sha256:fb0066d911bc3bcbc89358a563bef3432c1985e8aa76691825415ea8f376c1c4",
         "lang/ja/dixlase_cookie.php": "sha256:617bbb1311615f5b01f3f169ccaa34b33d1953df500aea1009e39beab98668eb",
         "lang/ja/front/cookie-consent.php": "sha256:9f29e78f32807dafd4aa98950d2148201303d1bc52683193a22c2ca8b4f44861",
-        "package-lock.json": "sha256:f70fdf46050cff89ee505452895c16dc99061bd7732859713741df9f3ba93275",
+        "package-lock.json": "sha256:b6f61f520177e113a3c0872c8ee67810d0e0fadbf50fe7272942c65b238f072d",
         "package.json": "sha256:b1901f3f6f29d3938be7f8d591289061c233d17c25738c9a4d141d18e920ae90",
         "phpunit.xml": "sha256:5af224233d2b1a5dd0fb482b2b0ef525a5a821044a0c25e8eff2f8f3a52190d7",
         "resources/src/css/style.scss": "sha256:13bf4ad2a5103944bdd0d24edda1480d6a47fb4e6df22f7b53acec4164a3dfc2",
@@ -190,6 +190,6 @@
     "signing": {
         "algo": "ed25519",
         "key_id": "dixlase-authority-2026",
-        "signed_at": "2026-10-09T17:00:25+00:00"
+        "signed_at": "2026-10-09T17:52:34+00:00"
     }
 }
