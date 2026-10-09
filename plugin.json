@@ -4,7 +4,7 @@
     "repository": "",
     "package_name": "dixlase/dixlase-cookie",
     "slug": "dixlase-cookie",
-    "version": "0.1.3",
+    "version": "0.1.4",
     "description": {
         "en": "GDPR-ready cookie consent plugin. Provides a per-category consent banner (necessary / functional / analytics / marketing) and a re-openable panel to withdraw consent anytime.",
         "ja": "GDPR対応のクッキー同意プラグイン。カテゴリ別（必須／機能／分析／マーケティング）の同意バナーと、同意をいつでも撤回できる設定画面を提供します。"
@@ -118,8 +118,8 @@
         "protected_storage_paths": []
     },
     "files": {
-        "CHANGELOG.ja.md": "sha256:00821138f6c8cc767b8ccbc416f7ab24c4e1e17dd651ee200fe03c598e8514d5",
-        "CHANGELOG.md": "sha256:377a397181f70dfb3648021385fb80392e2a448ee8270756976c4da2ec80a020",
+        "CHANGELOG.ja.md": "sha256:b5bbf48a4144150a91f25620a7cd7bb2d4f6eda92f81fdfe30b2548effc26dc8",
+        "CHANGELOG.md": "sha256:5ddcfd60f50af1ee897ce7d172dfb5adfdd7b0c71373260804b2c795a941e291",
         "CONTRIBUTING.ja.md": "sha256:22f29b4197c386fd13d0610bcaa8d80e65468c1c50af8393fc47983d9376e531",
         "CONTRIBUTING.md": "sha256:cb122a1d89afd359dc1e0f17c56ef1b6bc291d6692e1199df0726f74a20ddaf1",
         "COPYRIGHT-POLICY.ja.md": "sha256:6ecbedfe7da3ca15a71c43151e30da9eaf3ada299f6b2c43ac6e3bbad01d4449",
@@ -143,7 +143,7 @@
         "app/Models/DixlaseCookieSetting.php": "sha256:f9288c0dd55c439e3e0da6ae5aee81064a1725c9d65c823e324fa120f49432e4",
         "app/Providers/DixlaseCookieServiceProvider.php": "sha256:6d742b6a5a8c57b3a4078b33cedb27cd12aa22fd43cc0844ab6efe9f4e23fbb7",
         "app/Services/CookieConsentStateProvider.php": "sha256:d14806cfd9d6b426ca16cd6c33ccc58f0ee93da73a12b9980141bd612b9e2ee1",
-        "composer.json": "sha256:8d7a9202e42bab9d3ac0ef0589e2db6537a12049bfd56e2497fe44c0f79eb700",
+        "composer.json": "sha256:12984c60fee6255034e8f13b6e25ce8bffec6ab26c71be1a73df2e816ed47680",
         "config/admin.php": "sha256:93413a461e7eec4baa95544a5796e102fcceff37e3bf0e68d28586d2044374e9",
         "config/admin/database-cleanup.php": "sha256:e3786d8fa87a2f4ca497843bc7f168f3e3989e5f3fa12fd2ad71f582d66a6750",
         "config/admin/navigation.php": "sha256:b642a2a8c30fa5fc06046aaa23dfe1ee055c5534937b1913e6f1981696fdec98",
@@ -165,7 +165,7 @@
         "lang/ja/dixlase_cookie.php": "sha256:617bbb1311615f5b01f3f169ccaa34b33d1953df500aea1009e39beab98668eb",
         "lang/ja/front/cookie-consent.php": "sha256:9f29e78f32807dafd4aa98950d2148201303d1bc52683193a22c2ca8b4f44861",
         "package-lock.json": "sha256:f70fdf46050cff89ee505452895c16dc99061bd7732859713741df9f3ba93275",
-        "package.json": "sha256:c1d771af21a8fa6d0d862d6499aeca081b14b9bc0180f99192be204f2995dabc",
+        "package.json": "sha256:b1901f3f6f29d3938be7f8d591289061c233d17c25738c9a4d141d18e920ae90",
         "phpunit.xml": "sha256:5af224233d2b1a5dd0fb482b2b0ef525a5a821044a0c25e8eff2f8f3a52190d7",
         "resources/src/css/style.scss": "sha256:13bf4ad2a5103944bdd0d24edda1480d6a47fb4e6df22f7b53acec4164a3dfc2",
         "resources/src/js/app.js": "sha256:9224382f27ee17d51b073616c9c1fefb563026e8c08509388facb86256510077",
@@ -180,7 +180,7 @@
         "tests/Feature/Console/CookiePruneCommandTest.php": "sha256:b6d9cca800444a85ca9594f42f79eab3d6ef1dba42cf095aadfa608d70d6457d",
         "tests/Feature/Front/ConsentChangedDispatchTest.php": "sha256:969e006aa46e64bed3359a0fbfff4e604d3cf55eaa2de292d79ecb9610dc23a0",
         "tests/Feature/Front/CookieConsentAcceptTest.php": "sha256:021da02ea5646c9f84fe62892d1640bcf130f5f2bf3f6433e6a5be465a43be9a",
-        "tests/Feature/Front/CookieConsentBannerTest.php": "sha256:7ae7c6d0bc25da5259a0c9b41ebada6edfa138c281a9892fc45a43ce983e402d",
+        "tests/Feature/Front/CookieConsentBannerTest.php": "sha256:2fec35581edacadcc8e2d99f1866fd8344eb0c6ee87d1987ed5b8215d306ea5e",
         "tests/Unit/ExampleTest.php": "sha256:1cad34c5fceca09d321d56e46109013562580582de4a57437792b71c3a337d71",
         "tests/Unit/Services/CookieConsentStateProviderTest.php": "sha256:e3b8f3f601fa036c53ae88d23aaab6cf436f27d5807fb475327130f883c842e1",
         "tests/Unit/VersionManifestConsistencyTest.php": "sha256:fe6a49fabe1b5c4de7744355bbd2df010fa6a69b12799b610449be0796af964a",
@@ -190,6 +190,6 @@
     "signing": {
         "algo": "ed25519",
         "key_id": "dixlase-authority-2026",
-        "signed_at": "2026-10-03T08:07:32+00:00"
+        "signed_at": "2026-10-09T17:00:25+00:00"
     }
 }

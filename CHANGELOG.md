@@ -5,6 +5,15 @@ All notable changes to the DixlaseCookie plugin are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this plugin follows Semantic Versioning.
 
+## [0.1.4] — 2026-10-10
+
+### Development
+
+- The four banner-injection feature tests pass again: the test now resolves the HTTP
+  kernel before pushing the injector middleware, so the push is not lost when the kernel
+  is built later (#27, fixes #21). No runtime code changed.
+- The test workflow no longer sets an unused `COMPOSER_AUTH` value (#26, fixes #25).
+
 ## [0.1.3] — 2026-10-03
 
 ### Changed
