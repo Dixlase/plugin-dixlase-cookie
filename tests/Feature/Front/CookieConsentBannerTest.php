@@ -36,6 +36,7 @@ use App\Contracts\Cookie\ConsentStateProviderInterface;
 use App\Contracts\Site\SiteContextInterface;
 use App\Contracts\TranslationResolver;
 use App\Models\Site;
+use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
@@ -108,6 +109,20 @@ class CookieConsentBannerTest extends TestCase
         // the view and translation namespaces registered.
         $this->app['view']->addNamespace('dixlase-cookie', base_path('plugins/DixlaseCookie/resources/views'));
         $this->app['translator']->addNamespace('dixlase-cookie', base_path('plugins/DixlaseCookie/lang'));
+
+        // `Illuminate\Foundation\Http\Kernel::__construct()` calls
+        // `syncMiddlewareToRouter()`, which REPLACES the router's `web` and
+        // `api` groups with the kernel's own arrays. In a feature test the
+        // kernel is first resolved when the first request is made — after
+        // `setUp()` — so a middleware pushed onto the `web` group here would
+        // be thrown away before the request is dispatched, and the route
+        // below would run with no middleware at all. That is exactly what
+        // these tests used to see: the bare page, because the injector never
+        // ran. Resolving the kernel now makes the sync happen before the push
+        // instead of after it. Live requests are unaffected — public/index.php
+        // constructs the kernel before any service provider boots, so the
+        // provider's own push already lands after the sync there.
+        app(HttpKernel::class);
 
         $router = app('router');
         $router->post('/cookie-consent/accept', [CookieConsentController::class, 'accept'])
