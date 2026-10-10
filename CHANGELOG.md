@@ -5,6 +5,16 @@ All notable changes to the DixlaseCookie plugin are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this plugin follows Semantic Versioning.
 
+## [0.1.5] — 2026-10-10
+
+### Development
+
+- Bump `source-map-js` from 1.2.1 to 1.2.2, a build-time dependency that is not
+  shipped to sites (#28).
+- The test workflow checks out core with its default token instead of
+  `CORE_REPO_TOKEN`. Core is public, and Dependabot pull requests cannot read Actions
+  secrets, so their tests stopped before running (#30, fixes #29).
+
 ## [0.1.4] — 2026-10-10
 
 ### Development
