@@ -5,6 +5,14 @@ All notable changes to the DixlaseCookie plugin are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this plugin follows Semantic Versioning.
 
+## [0.1.6] — 2026-10-13
+
+### Development
+
+- A smoke test opens every admin GET route of the plugin as the admin and the editor
+  role and checks that none returns a server error (#32, fixes #31). No runtime code
+  changed.
+
 ## [0.1.5] — 2026-10-10
 
 ### Development
