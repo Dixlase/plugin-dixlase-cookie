@@ -5,6 +5,15 @@ All notable changes to the DixlaseCookie plugin are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this plugin follows Semantic Versioning.
 
+## [0.1.7] — 2026-10-13
+
+### Fixed
+
+- On a phone (below 640px) the button that re-opens the banner is now an icon-only,
+  44px round button, so it is easy to tap and no longer covers the page with a label
+  (#34, fixes #33). The "Cookie" label is hidden there, and the button carries an
+  `aria-label` so screen readers still announce it. From 640px up it is unchanged.
+
 ## [0.1.6] — 2026-10-13
 
 ### Development
