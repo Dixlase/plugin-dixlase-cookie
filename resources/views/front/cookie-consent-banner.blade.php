@@ -102,11 +102,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             x-show="!open"
             x-cloak
             data-cookie-consent-trigger
-            class="dxlc-trigger">
+            class="dxlc-trigger"
+            aria-label="{{ __('dixlase-cookie::front/cookie-consent.reopen') }}">
         <svg class="dxlc-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.94 6.94a1.5 1.5 0 112.12 2.12 1.5 1.5 0 01-2.12-2.12zM12 13a1 1 0 11-2 0 1 1 0 012 0zM7 11a1 1 0 100-2 1 1 0 000 2zm6.5-2.5a1 1 0 11-2 0 1 1 0 012 0z" clip-rule="evenodd" />
         </svg>
-        {{ __('dixlase-cookie::front/cookie-consent.reopen') }}
+        {{-- Hidden on mobile (icon-only); the button keeps its name via aria-label. --}}
+        <span class="dxlc-trigger-label">{{ __('dixlase-cookie::front/cookie-consent.reopen') }}</span>
     </button>
 
     {{-- Consent panel: banner on first visit, re-openable editor after. --}}
