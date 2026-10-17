@@ -239,7 +239,7 @@ class CookieConsentBannerTest extends TestCase
     }
 
     /**
-     * Without DixlaseMultilingual, core's SetFrontLocale lets the browser
+     * Without a translation provider, core's SetFrontLocale lets the browser
      * Accept-Language outrank the site default, so a Japanese single-language
      * site would show an English banner to an English-browser visitor. The
      * banner must instead follow the site's configured default language.

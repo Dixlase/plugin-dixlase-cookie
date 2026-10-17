@@ -108,7 +108,6 @@ DixlaseCookie プラグインの主要な変更はすべてこのファイルに
 - `InjectCookieConsentBanner` ミドルウェアを介して、フロントエンド応答に
   同意バナーを注入。
 - コアの `App\Contracts\Cookie\ConsentStateProviderInterface` を実装し、他の
-  プラグインが同意状態を読み取れるようにする（例: DixlaseSEO の分析ゲーティング、
-  DixlaseLegal の同意ログ）。
+  プラグインが同意状態を読み取れるようにする（例: DixlaseSEO の分析ゲーティング）。
 - 同意の更新時に、コアの `ConsentChanged` イベントを発行。
 - 放置された／古くなった同意行を削除する `dls:cookie:prune` Artisan コマンド。

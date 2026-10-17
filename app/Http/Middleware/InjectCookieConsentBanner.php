@@ -253,9 +253,9 @@ class InjectCookieConsentBanner
     /**
      * Locale the banner UI strings should be rendered in.
      *
-     * When DixlaseMultilingual is installed it binds TranslationResolver
+     * When a translation provider is installed it binds TranslationResolver
      * and the app locale already reflects the visitor's resolved language,
-     * so we honor it (per-visitor localization). Without Multilingual,
+     * so we honor it (per-visitor localization). Without one,
      * core's SetFrontLocale lets the browser Accept-Language header outrank
      * the site default, which would show an English banner on an otherwise
      * Japanese, single-language site. In that case fall back to the site's

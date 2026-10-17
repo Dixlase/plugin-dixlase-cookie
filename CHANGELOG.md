@@ -106,7 +106,6 @@ Initial release. Requires Dixlase `^0.1.0` (Plugin API `^0.1`), PHP `>= 8.3`.
 - Injects the consent banner into front-end responses via the
   `InjectCookieConsentBanner` middleware.
 - Implements Core's `App\Contracts\Cookie\ConsentStateProviderInterface` so other
-  plugins can read consent state (e.g. DixlaseSEO's analytics gating and
-  DixlaseLegal's consent log).
+  plugins can read consent state (e.g. DixlaseSEO's analytics gating).
 - Dispatches Core's `ConsentChanged` event on consent updates.
 - `dls:cookie:prune` Artisan command to prune abandoned / out-of-date consent rows.
