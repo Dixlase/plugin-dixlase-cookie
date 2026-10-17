@@ -35,10 +35,10 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Plugin-private settings table. Mirrors the DixlaseLegal layout
- * (`name` + `value`) so the operator-facing settings UI follows
- * the same pattern: a single shared key/value store the plugin's
- * admin controllers read and write through DixlaseCookieSetting.
+ * Plugin-private settings table: a simple `name` + `value` store so
+ * the operator-facing settings UI follows a single shared pattern —
+ * one key/value store the plugin's admin controllers read and write
+ * through DixlaseCookieSetting.
  *
  * Operator-controlled keys this plugin will use (introduced in
  * follow-up commits B-3 / B-5):

@@ -37,18 +37,18 @@ use Illuminate\Support\Facades\Schema;
 /**
  * Cookie consent record table — DELIBERATELY MINIMAL.
  *
- * Per `.backlog/dixlase-legal-cookie-split-strategy.md` the free
- * plugin records only what is necessary for the subject's own
- * lookup of their own consent. Audit-quality metadata (IP, UA,
- * session id) lives on DixlaseLegal's separate audit table, so the
- * shape here does NOT include any of those columns by design.
+ * By design the free plugin records only what is necessary for the
+ * subject's own lookup of their own consent. Audit-quality metadata
+ * (IP, UA, session id) lives on a separate consent-audit store,
+ * populated via the ConsentChanged event, so the shape here does NOT
+ * include any of those columns by design.
  *
  * One row per visitor (keyed by the unique `consent_id`). Each new
  * decision — accept, withdraw, change a category — UPDATES that single
  * row in place rather than appending, so the table holds only the
  * visitor's current state and does not grow per action. Full change
- * history is not kept here on purpose: the audit trail belongs to
- * DixlaseLegal's separate table, populated via the ConsentChanged event.
+ * history is not kept here on purpose: the audit trail belongs to a
+ * separate consent-audit store, populated via the ConsentChanged event.
  *
  * Fields:
  * - `consent_id`     UUID issued at first accept; UNIQUE. Matches the
