@@ -5,6 +5,13 @@ All notable changes to the DixlaseCookie plugin are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this plugin follows Semantic Versioning.
 
+## [0.1.10] — 2026-10-24
+
+### Development
+
+- Bump `vite` from 8.3.1 to 8.3.3, a build-time dependency that is not shipped to sites (#39).
+  No runtime code changed.
+
 ## [0.1.9] — 2026-10-18
 
 ### Changed
