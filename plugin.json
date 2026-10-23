@@ -164,8 +164,8 @@
         "lang/ja/admin/navigation.php": "sha256:fb0066d911bc3bcbc89358a563bef3432c1985e8aa76691825415ea8f376c1c4",
         "lang/ja/dixlase_cookie.php": "sha256:617bbb1311615f5b01f3f169ccaa34b33d1953df500aea1009e39beab98668eb",
         "lang/ja/front/cookie-consent.php": "sha256:9f29e78f32807dafd4aa98950d2148201303d1bc52683193a22c2ca8b4f44861",
-        "package-lock.json": "sha256:b6f61f520177e113a3c0872c8ee67810d0e0fadbf50fe7272942c65b238f072d",
-        "package.json": "sha256:d32bf1997be48a5c5d17952fc126609254b34daaa23f9c862102e5f0cd0c13f8",
+        "package-lock.json": "sha256:2c3e5e215765f07f28bd650647e69827002b99ce4176f62ffd249bed6a6d41db",
+        "package.json": "sha256:5c4cd290143f654daa45c91b5c70244f7f1c5e17e771e699463b98d2eeb8f104",
         "phpunit.xml": "sha256:5af224233d2b1a5dd0fb482b2b0ef525a5a821044a0c25e8eff2f8f3a52190d7",
         "resources/src/css/style.scss": "sha256:13bf4ad2a5103944bdd0d24edda1480d6a47fb4e6df22f7b53acec4164a3dfc2",
         "resources/src/js/app.js": "sha256:9224382f27ee17d51b073616c9c1fefb563026e8c08509388facb86256510077",
@@ -192,6 +192,6 @@
     "signing": {
         "algo": "ed25519",
         "key_id": "dixlase-authority-2026",
-        "signed_at": "2026-10-17T15:17:01+00:00"
+        "signed_at": "2026-10-23T13:59:43+00:00"
     }
 }
