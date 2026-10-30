@@ -1,3 +1,7 @@
+<p align="center">
+  <img src=".github/assets/social-preview.png" alt="Dixlase Cookie" width="640">
+</p>
+
 # Dixlase Cookie
 
 For Japanese, see [README.ja.md](./README.ja.md).
