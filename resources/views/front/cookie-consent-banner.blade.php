@@ -156,9 +156,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                  animated open/closed like an accordion via CSS grid rows
                  (no Alpine plugin needed, so it stays theme-independent).
                  Per-category descriptions live in the linked cookie policy,
-                 not inline, to keep it small. --}}
+                 not inline, to keep it small.
+
+                 The grid-rows collapse hides the content visually but keeps
+                 it in the DOM so it can animate, so the toggles and the save
+                 button would stay in the tab order while collapsed. Mark the
+                 inner region `inert` whenever the details are closed: that
+                 removes it from focus order and from the accessibility tree
+                 without a `display: none` that would break the animation.
+                 (`:inert` is a plain attribute bind — Alpine adds it when the
+                 expression is truthy and removes it otherwise, so no boolean
+                 attribute plugin is needed.) --}}
             <div class="dxlc-details" :class="detailsClass()">
-              <div class="dxlc-details-inner">
+              <div class="dxlc-details-inner" :inert="!showDetails">
             <div class="dxlc-cats">
                 <label class="dxlc-toggle dxlc-toggle--disabled">
                     <input type="checkbox" class="dxlc-toggle-input" checked disabled>

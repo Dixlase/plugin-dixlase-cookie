@@ -174,6 +174,21 @@ class CookieConsentBannerTest extends TestCase
         $response->assertSee(__('dixlase-cookie::front/cookie-consent.reopen'), false);
     }
 
+    public function test_collapsed_details_region_is_marked_inert(): void
+    {
+        DixlaseCookieSetting::setValue(InjectCookieConsentBanner::ENABLED_SETTING_KEY, '1');
+
+        $response = $this->get($this->pageUrl);
+
+        $response->assertOk();
+        // The details region collapses with a CSS grid-rows animation, not
+        // `display: none`, so its toggles and the save button stay in the DOM
+        // while hidden. `:inert="!showDetails"` removes them from the focus
+        // order and the accessibility tree whenever the panel is closed, so a
+        // keyboard user cannot Tab into controls they cannot see (issue #19).
+        $response->assertSee('class="dxlc-details-inner" :inert="!showDetails"', false);
+    }
+
     public function test_nothing_is_injected_when_disabled(): void
     {
         DixlaseCookieSetting::setValue(InjectCookieConsentBanner::ENABLED_SETTING_KEY, '0');
