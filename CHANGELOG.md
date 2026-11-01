@@ -5,6 +5,19 @@ All notable changes to the DixlaseCookie plugin are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this plugin follows Semantic Versioning.
 
+## [0.1.12] — 2026-11-01
+
+### Fixed
+
+- While the banner's details are collapsed, the category toggles and the "Accept selected" button
+  are out of the tab order and the accessibility tree (#49, fixes #19). They were hidden only
+  visually, so a keyboard user could tab into controls they could not see. The open and close
+  animation is unchanged.
+
+### Changed
+
+- Both READMEs open with the social preview image (#47, fixes #46).
+
 ## [0.1.11] — 2026-10-30
 
 ### Changed
