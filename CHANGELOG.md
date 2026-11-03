@@ -5,6 +5,16 @@ All notable changes to the DixlaseCookie plugin are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this plugin follows Semantic Versioning.
 
+## [0.1.13] — 2026-11-04
+
+### Changed
+
+- The built banner stylesheet is produced once, when the release is cut, and shipped with the
+  release itself (#50). The release ZIP and every deployed site now carry the same bytes, and
+  they are covered by the extension's signature like every other distributed file.
+- Requires Dixlase core 0.2.1 or later (`requires.dixlase`: `>=0.2.1`) (#50). Update core
+  before this plugin.
+
 ## [0.1.12] — 2026-11-01
 
 ### Fixed

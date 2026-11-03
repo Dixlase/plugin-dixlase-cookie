@@ -1,0 +1,11 @@
+{
+  "resources/src/scss/banner.scss": {
+    "file": "css/banner-Bz6ErnJg.css",
+    "name": "banner",
+    "names": [
+      "banner.css"
+    ],
+    "src": "resources/src/scss/banner.scss",
+    "isEntry": true
+  }
+}
