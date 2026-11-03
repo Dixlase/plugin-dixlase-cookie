@@ -1,6 +1,8 @@
 /node_modules
 /vendor
-/resources/assets/*
+# resources/assets is NOT ignored: the built front-end assets are
+# committed by the release, signed with the rest of the extension, and
+# distributed as those exact bytes. Nothing rebuilds them downstream.
 .env
 .env.backup
 .env.production

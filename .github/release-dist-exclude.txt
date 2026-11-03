@@ -2,8 +2,8 @@
 # .github/workflows/release.yml. rsync --exclude-from format — one pattern
 # per line, '#' starts a comment, trailing '/' marks a directory.
 #
-# Everything NOT listed here ships in the ZIP, including the freshly built
-# (gitignored) resources/assets/ and every file covered by plugin.json's
+# Everything NOT listed here ships in the ZIP, including the committed
+# resources/assets/ build output and every file covered by plugin.json's
 # signature files-map (plugin.json, signature.sig, composer.json,
 # package.json, package-lock.json, vite.config.js, resources/, app/,
 # config/, database/, lang/, routes/, README/LICENSE/NOTICE, …) so the
@@ -11,15 +11,16 @@
 
 # ----- VCS metadata + CI config (never part of the runtime extension) -----
 # .gitignore is deliberately NOT excluded: the signature verifier reads it
-# from the extracted tree to know which paths to skip, and without it the
-# shipped (gitignored) resources/assets/* count as unsigned extra files,
-# which reports the extension as tampered with.
+# from the extracted tree to know which paths to skip. It no longer decides
+# whether the build output is verified -- resources/assets is signed, and
+# core takes the covered directories from the signed files-map -- but leaving
+# it out would still change which other paths are skipped.
 .git/
 .github/
 .gitattributes
 .editorconfig
 
-# ----- Build-time only (assets are already built into resources/assets) -----
+# ----- Build-time only (the built assets are committed in resources/assets) -----
 node_modules/
 
 # CI staging dir — without this, rsync recurses into its own target.
