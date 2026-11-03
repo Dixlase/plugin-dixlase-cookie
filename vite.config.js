@@ -1,8 +1,10 @@
 import { defineConfig } from 'vite';
 import path from 'path';
 
-// Builds the plugin's front-end assets into resources/assets/ (a gitignored
-// build artifact bundled into the release by CI). Currently a single entry:
+// Builds the plugin's front-end assets into resources/assets/. That output is
+// committed by the release and covered by the signature, so these are the
+// bytes every site receives -- nothing rebuilds them downstream. Build from a
+// clean checkout before signing. Currently a single entry:
 // the self-contained cookie-consent banner stylesheet, authored as SCSS in
 // resources/src/scss/banner.scss and built to css/banner.css, loaded by the
 // injector middleware as assets/plugins/DixlaseCookie/css/banner.css.

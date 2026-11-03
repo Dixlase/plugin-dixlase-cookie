@@ -55,19 +55,11 @@ jobs:
         # Dixlase/dixlase-core#520.
         run: .github/scripts/check-manifest.sh plugin.json
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v5
-        with:
-          node-version: '20'
-          cache: 'npm' # package-lock.json is committed, so setup-node can cache
-
-      - name: Build front-end assets
-        # Populates the gitignored resources/assets/ (vite outDir) so the
-        # ZIP can ship prebuilt output. Production hosts never run npm.
-        run: |
-          # npm ci: reproducible install pinned to the committed lockfile.
-          npm ci --no-audit --no-fund
-          npm run build
+      # No build here. resources/assets/ is committed, and the manifest
+      # check above has already compared its bytes against the signature,
+      # so the ZIP ships exactly what was signed. A build on this runner
+      # could produce different bytes and would make the ZIP fail
+      # verification on every site that installs it.
 
       - name: Stage distribution tree
         id: stage
@@ -87,13 +79,15 @@ jobs:
           ZIP_NAME="dixlase-cookie-${{ steps.stage.outputs.tag }}.zip"
           (cd dist && zip -rq "../${ZIP_NAME}" DixlaseCookie)
           echo "zip=${ZIP_NAME}" >> "$GITHUB_OUTPUT"
-          # Fail loudly if the prebuilt assets did not make it into the ZIP.
-          # The SCSS entry resources/src/scss/banner.scss builds to
-          # css/banner-<hash>.css, so match the stem rather than a fixed
-          # filename; thumbnail.png is committed, so a merely non-empty
-          # resources/assets is not enough.
+          # Fail loudly if the built assets did not make it into the ZIP.
+          # They are committed by the release, so this fails when a release
+          # was cut without building them. The SCSS entry
+          # resources/src/scss/banner.scss builds to css/banner-<hash>.css,
+          # so match the stem rather than a fixed filename; thumbnail.png
+          # sits at the plugin root, so a merely non-empty resources/assets
+          # is not enough.
           if ! unzip -l "${ZIP_NAME}" | grep -qE 'DixlaseCookie/resources/assets/css/banner-[A-Za-z0-9_-]+\.css'; then
-            echo "::error::resources/assets/css/banner-<hash>.css missing from the release ZIP — the frontend build did not land." >&2
+            echo "::error::resources/assets/css/banner-<hash>.css missing from the release ZIP — the release did not build and commit the assets." >&2
             exit 1
           fi
 
