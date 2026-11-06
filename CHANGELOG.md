@@ -5,6 +5,13 @@ All notable changes to the DixlaseCookie plugin are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this plugin follows Semantic Versioning.
 
+## [0.1.14] — 2026-11-06
+
+### Changed
+
+- SCSS is compiled with `sass-embedded` only; the unused `sass` package is no longer installed
+  (#54). The built stylesheet is unchanged.
+
 ## [0.1.13] — 2026-11-04
 
 ### Changed
