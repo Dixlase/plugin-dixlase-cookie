@@ -10,7 +10,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    name: ${{ matrix.php == '8.3' && 'PHPUnit Tests' || format('PHPUnit Tests (PHP {0})', matrix.php) }}
+    name: ${{ matrix.php == '8.3' && matrix.db == 'sqlite' && 'PHPUnit Tests' || format('PHPUnit Tests ({0}, PHP {1})', matrix.db, matrix.php) }}
 
     # Every PHP version from core's floor (^8.3) up (Dixlase/dixlase-core#977).
     # 8.6 is a development build in setup-php (8.6.0-dev) until it is
@@ -18,15 +18,39 @@ jobs:
     # into `php` once setup-php lists it as stable. The 8.3 leg keeps the
     # check name the rulesets require, so the extra versions add checks
     # without renaming that one.
+    #
+    # SQLite accepts values MariaDB refuses (an empty string in an integer
+    # or datetime column, for one), so the suite also runs on the database
+    # the Docker installer ships (Dixlase/dixlase-core#978). The service
+    # container exists for every leg; the SQLite legs ignore it.
     continue-on-error: ${{ matrix.experimental }}
     strategy:
       fail-fast: false
       matrix:
+        db: [sqlite, mariadb]
         php: ['8.3', '8.4', '8.5']
         experimental: [false]
         include:
-          - php: '8.6'
+          - db: sqlite
+            php: '8.6'
             experimental: true
+          - db: mariadb
+            php: '8.6'
+            experimental: true
+
+    services:
+      mariadb:
+        image: mariadb:12.2.2
+        env:
+          MARIADB_ROOT_PASSWORD: password
+          MARIADB_DATABASE: dixlase_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
 
     steps:
       - name: Checkout plugin
@@ -45,7 +69,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: sodium, mbstring, json, sqlite3, pdo_sqlite, gd
+          extensions: sodium, mbstring, json, sqlite3, pdo_sqlite, pdo_mysql, gd
           coverage: none
 
       - name: Place plugin into core directory
@@ -91,8 +115,26 @@ jobs:
           fi
           echo "APP_KEY=${APP_KEY}" >> .env
 
-      - name: Run PHPUnit tests
+      - name: Run PHPUnit tests (SQLite)
+        if: matrix.db == 'sqlite'
         working-directory: core/plugins/DixlaseCookie
         env:
           APP_KEY: base64:INAsYduzvVFuYXTFeMS0EkLXHynFalWYt/O9hUlTdfg=
+        run: ../../vendor/bin/phpunit
+
+      - name: Run PHPUnit tests (MariaDB)
+        if: matrix.db == 'mariadb'
+        working-directory: core/plugins/DixlaseCookie
+        env:
+          APP_KEY: base64:INAsYduzvVFuYXTFeMS0EkLXHynFalWYt/O9hUlTdfg=
+          # phpunit.xml's <env> entries are not forced, so these win. Core's
+          # TestCase refuses MySQL drivers unless told the database is a
+          # disposable one -- which the service container above is.
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: dixlase_test
+          DB_USERNAME: root
+          DB_PASSWORD: password
+          DLS_TESTS_ALLOW_NON_SQLITE: '1'
         run: ../../vendor/bin/phpunit
