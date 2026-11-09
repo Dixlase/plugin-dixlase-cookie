@@ -10,7 +10,23 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    name: PHPUnit Tests
+    name: ${{ matrix.php == '8.3' && 'PHPUnit Tests' || format('PHPUnit Tests (PHP {0})', matrix.php) }}
+
+    # Every PHP version from core's floor (^8.3) up (Dixlase/dixlase-core#977).
+    # 8.6 is a development build in setup-php (8.6.0-dev) until it is
+    # released, so its legs report but do not fail the workflow; move it
+    # into `php` once setup-php lists it as stable. The 8.3 leg keeps the
+    # check name the rulesets require, so the extra versions add checks
+    # without renaming that one.
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.3', '8.4', '8.5']
+        experimental: [false]
+        include:
+          - php: '8.6'
+            experimental: true
 
     steps:
       - name: Checkout plugin
@@ -28,7 +44,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
+          php-version: ${{ matrix.php }}
           extensions: sodium, mbstring, json, sqlite3, pdo_sqlite, gd
           coverage: none
 
@@ -47,9 +63,9 @@ jobs:
         uses: actions/cache@v5
         with:
           path: core/vendor
-          key: ${{ runner.os }}-php83-composer-${{ hashFiles('core/composer.lock') }}
+          key: ${{ runner.os }}-php${{ matrix.php }}-composer-${{ hashFiles('core/composer.lock') }}
           restore-keys: |
-            ${{ runner.os }}-php83-composer-
+            ${{ runner.os }}-php${{ matrix.php }}-composer-
 
       - name: Install core composer dependencies
         working-directory: core
