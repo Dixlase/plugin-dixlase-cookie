@@ -5,6 +5,17 @@ All notable changes to the DixlaseCookie plugin are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this plugin follows Semantic Versioning.
 
+## [0.1.15] — 2026-11-09
+
+### Development
+
+- The tests run on every PHP version from 8.3 up: 8.3, 8.4, 8.5, and 8.6 while it is a
+  development build (#57, part of Dixlase/dixlase-core#977).
+- The tests run on MariaDB as well as SQLite, so a value SQLite accepts but MariaDB refuses is
+  caught before release (#58, part of Dixlase/dixlase-core#978).
+
+No change to the plugin itself.
+
 ## [0.1.14] — 2026-11-06
 
 ### Changed
